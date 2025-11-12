@@ -1,4 +1,4 @@
-package com.example.solid_classes.auth.model.register;
+package com.example.solid_classes.core.user.dto;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -16,7 +16,4 @@ public class UserRegisterForm {
     @NotEmpty(message = "A senha não pode estar vazia")
     @Length(min = 8, message = "A senha deve possuir ao menos 8 caracteres")
     private String password;
-
-    @NotEmpty(message = "O nome não pode estar vazio")
-    private String name;
 }

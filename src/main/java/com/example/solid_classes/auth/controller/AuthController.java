@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.solid_classes.auth.model.login.UserLoginForm;
 import com.example.solid_classes.auth.model.login.UserLoginResponse;
-import com.example.solid_classes.auth.model.register.UserRegisterForm;
 import com.example.solid_classes.auth.service.AuthService;
-import com.example.solid_classes.core.user.model.User;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
-
-    @PostMapping("/signup")
-    public ResponseEntity<User> registerUser(@Valid @RequestBody UserRegisterForm registerForm) {
-        User newUser = authService.signUp(registerForm);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
-    }
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> authenticate(@Valid @RequestBody UserLoginForm loginForm) {
