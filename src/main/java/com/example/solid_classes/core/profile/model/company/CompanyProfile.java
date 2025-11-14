@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.profile.model.ProfileEntity;
-import com.example.solid_classes.core.service.model.Service;
+import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -34,15 +34,25 @@ public class CompanyProfile extends ProfileEntity {
     private final List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<Service> services = new ArrayList<>();
+    private final List<ServiceOffering> services = new ArrayList<>();
 
     public void addProduct(Product product) {
-        this.products.add(product);
-        product.setCompany(this);
+        if (product != null && !this.products.contains(product))
+            this.products.add(product);
     }
 
-    public void addService(Service service) {
-        this.services.add(service);
-        service.setCompany(this);
+    public void removeProduct(Product product) {
+        if (product != null && this.products.contains(product))
+            this.products.remove(product);
+    }
+
+    public void addService(ServiceOffering service) {
+        if (service != null && !this.services.contains(service))
+            this.services.add(service);
+    }
+
+    public void removeService(ServiceOffering service) {
+        if (service != null && this.services.contains(service))
+            this.services.remove(service);
     }
 }

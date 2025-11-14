@@ -1,4 +1,4 @@
-package com.example.solid_classes.common.abs;
+package com.example.solid_classes.common.classes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

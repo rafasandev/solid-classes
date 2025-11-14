@@ -1,32 +1,51 @@
 package com.example.solid_classes.core.user.model;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.solid_classes.common.abs.AuditableEntity;
+import com.example.solid_classes.common.classes.AuditableEntity;
+import com.example.solid_classes.core.role.model.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
 @Getter
-@SuperBuilder
 @NoArgsConstructor
-public class User extends AuditableEntity implements UserDetails{
+public class User extends AuditableEntity implements UserDetails {
+
+    private User(String email, String password, boolean active, Set<Role> roles) {
+        this.email = email;
+        this.password = password;
+        this.active = active;
+        this.roles = roles;
+    }
 
     @Column(unique = true)
     private String email;
-    private String userCode;
     private String password;
     private boolean active;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
+    public static User create(String email, String password, boolean active, Set<Role> roles) {
+        return new User(email, password, active, roles);
+    }
 
     @Override
     public String getUsername() {
@@ -35,7 +54,9 @@ public class User extends AuditableEntity implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
+            .toList();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.product.model;
+package com.example.solid_classes.core.service_offering.model;
 
 import com.example.solid_classes.common.classes.AuditableEntity;
 import com.example.solid_classes.core.category.model.Category;
@@ -14,19 +14,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "products")
+@Table(name = "services")
 @Getter
 @NoArgsConstructor
-public class Product extends AuditableEntity {
+public class ServiceOffering extends AuditableEntity {
 
-    private Product(String productName, Category category, CompanyProfile company) {
-        this.productName = productName;
+    private ServiceOffering(String serviceName, Category category, CompanyProfile company) {
+        this.serviceName = serviceName;
         this.setCategory(category);
         this.setCompany(company);
     }
 
     @Column(nullable = false, unique = true)
-    private String productName;
+    private String serviceName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -36,27 +36,27 @@ public class Product extends AuditableEntity {
     @JoinColumn(name = "company_id")
     private CompanyProfile company;
 
-    public static Product create(String productName, Category category, CompanyProfile company) {
-        return new Product(productName, category, company);
+    public static ServiceOffering create(String serviceName, Category category, CompanyProfile company) {
+        return new ServiceOffering(serviceName, category, company);
     }
 
     private void setCategory(Category category) {
         if (this.category != null)
-            this.category.removeProduct(this);
+            this.category.removeService(this);
 
         this.category = category;
 
         if (category != null)
-            category.addProduct(this);
+            category.addService(this);
     }
 
     private void setCompany(CompanyProfile company) {
         if (this.company != null)
-            this.company.removeProduct(this);
+            this.company.removeService(this);
 
         this.company = company;
 
         if (company != null)
-            company.addProduct(this);
+            company.addService(this);
     }
 }

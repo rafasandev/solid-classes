@@ -1,38 +1,43 @@
 package com.example.solid_classes.core.user.service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.solid_classes.common.abs.CrudService;
+import com.example.solid_classes.core.role.model.Role;
+import com.example.solid_classes.core.user.interfaces.UserPort;
 import com.example.solid_classes.core.user.model.User;
-import com.example.solid_classes.core.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserService extends CrudService<User, UserRepository> {
+public class UserService {
 
+    private final UserPort userPort;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
-    protected String getEntityName() {
-        return "Usuário";
+    public User getByEmail(String email) {
+        return userPort.getByEmail(email);
     }
 
-    public User getByEmail(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(this::throwEntityNotFound);
+    public User getLoggedInUser() {
+        return userPort.getLoggedInUser();
     }
 
     public User signUp(String email, String password) {
-        User user = User.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .active(true)
-                .build();
+        String passwordEncoded = passwordEncoder.encode(password);
+        User user = User.create(email, passwordEncoded, true, new HashSet<>());
 
-        return save(user);
+        return userPort.save(user);
     }
 
+    public User adminSignUp(String email, String password, Set<Role> roles) {
+        String passwordEncoded = passwordEncoder.encode(password);
+
+        User newAdmin = User.create(email, passwordEncoded, true, roles);
+        return userPort.save(newAdmin);
+    }
 }
