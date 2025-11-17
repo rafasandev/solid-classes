@@ -3,7 +3,7 @@ package com.example.solid_classes.core.category.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.solid_classes.common.classes.AuditableEntity;
+import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 
@@ -15,29 +15,23 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "categories")
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 public class Category extends AuditableEntity {
-
-    private Category(String categoryName) {
-        this.categoryName = categoryName;
-    }
 
     @Column(nullable = false, unique = true)
     private String categoryName;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<Product> products = new ArrayList<>();
+    private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<ServiceOffering> services = new ArrayList<>();
-
-    public static Category create(String categoryName) {
-        return new Category(categoryName);
-    }
+    private List<ServiceOffering> services = new ArrayList<>();
 
     public void addProduct(Product product) {
         if (product != null && !this.products.contains(product))

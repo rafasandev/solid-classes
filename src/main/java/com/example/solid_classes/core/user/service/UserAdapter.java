@@ -5,9 +5,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.example.solid_classes.common.classes.NamedCrudAdapter;
-import com.example.solid_classes.core.user.interfaces.UserPort;
+import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.user.model.User;
+import com.example.solid_classes.core.user.ports.UserPort;
 import com.example.solid_classes.core.user.repository.UserRepository;
 
 @Service

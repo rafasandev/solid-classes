@@ -8,7 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.solid_classes.common.classes.AuditableEntity;
+import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.role.model.Role;
 
 import jakarta.persistence.Column;
@@ -20,19 +20,14 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
 @Getter
 @NoArgsConstructor
+@SuperBuilder
 public class User extends AuditableEntity implements UserDetails {
-
-    private User(String email, String password, boolean active, Set<Role> roles) {
-        this.email = email;
-        this.password = password;
-        this.active = active;
-        this.roles = roles;
-    }
 
     @Column(unique = true)
     private String email;
@@ -42,10 +37,6 @@ public class User extends AuditableEntity implements UserDetails {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
-
-    public static User create(String email, String password, boolean active, Set<Role> roles) {
-        return new User(email, password, active, roles);
-    }
 
     @Override
     public String getUsername() {

@@ -1,11 +1,11 @@
 package com.example.solid_classes.core.category.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.UUID;
 
-import com.example.solid_classes.core.category.dto.CategoryForm;
-import com.example.solid_classes.core.category.interfaces.CategoryPort;
+import org.springframework.stereotype.Service;
+
 import com.example.solid_classes.core.category.model.Category;
+import com.example.solid_classes.core.category.ports.CategoryPort;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,10 +15,12 @@ public class CategoryService {
 
     private final CategoryPort categoryPort;
 
-    @Transactional
-    public Category createCategory(CategoryForm categoryForm) {
-        Category newCategory = Category.create(categoryForm.getCategoryName());
+    public Category getById(UUID categoryId) {
+        return categoryPort.getById(categoryId);
+    }
 
+    public Category saveCategory(Category newCategory) {
         return categoryPort.save(newCategory);
     }
+
 }

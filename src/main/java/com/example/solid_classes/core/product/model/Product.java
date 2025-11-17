@@ -1,29 +1,30 @@
 package com.example.solid_classes.core.product.model;
 
-import com.example.solid_classes.common.classes.AuditableEntity;
+import java.util.List;
+
+import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.category.model.Category;
+import com.example.solid_classes.core.product_variation.model.ProductVariation;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "products")
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 public class Product extends AuditableEntity {
-
-    private Product(String productName, Category category, CompanyProfile company) {
-        this.productName = productName;
-        this.setCategory(category);
-        this.setCompany(company);
-    }
 
     @Column(nullable = false, unique = true)
     private String productName;
@@ -36,13 +37,17 @@ public class Product extends AuditableEntity {
     @JoinColumn(name = "company_id")
     private CompanyProfile company;
 
-    public static Product create(String productName, Category category, CompanyProfile company) {
-        return new Product(productName, category, company);
-    }
+    @ManyToMany
+    @JoinTable(
+        name = "product_variation_products",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "product_variation_id")
+    )
+    private List<ProductVariation> productVariations;
 
-    private void setCategory(Category category) {
+    public void setCategory(Category category) {
+        this.category.removeProduct(this);
         if (this.category != null)
-            this.category.removeProduct(this);
 
         this.category = category;
 
@@ -50,7 +55,7 @@ public class Product extends AuditableEntity {
             category.addProduct(this);
     }
 
-    private void setCompany(CompanyProfile company) {
+    public void setCompany(CompanyProfile company) {
         if (this.company != null)
             this.company.removeProduct(this);
 
@@ -59,4 +64,9 @@ public class Product extends AuditableEntity {
         if (company != null)
             company.addProduct(this);
     }
+
+    public void addProductVariation(ProductVariation productVariation) {
+        this.productVariations.add(productVariation);
+    }
+
 }

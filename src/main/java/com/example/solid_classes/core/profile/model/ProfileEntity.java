@@ -27,12 +27,12 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public abstract class ProfileEntity {
     @Id
-    private UUID id;
+    protected UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "user_id")
-    private User user;
+    protected User user;
 
     @CreatedDate
     private LocalDateTime createdAt;

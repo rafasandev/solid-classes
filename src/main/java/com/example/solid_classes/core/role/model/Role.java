@@ -3,7 +3,7 @@ package com.example.solid_classes.core.role.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.example.solid_classes.common.classes.AuditableEntity;
+import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.role.model.enums.RoleName;
 import com.example.solid_classes.core.user.model.User;
 

@@ -2,10 +2,10 @@ package com.example.solid_classes.core.role.service;
 
 import org.springframework.stereotype.Service;
 
-import com.example.solid_classes.common.classes.NamedCrudAdapter;
-import com.example.solid_classes.core.role.interfaces.RolePort;
+import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.role.model.Role;
 import com.example.solid_classes.core.role.model.enums.RoleName;
+import com.example.solid_classes.core.role.ports.RolePort;
 import com.example.solid_classes.core.role.repository.RoleRepository;
 
 @Service

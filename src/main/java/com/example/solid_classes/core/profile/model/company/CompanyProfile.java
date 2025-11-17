@@ -31,10 +31,10 @@ public class CompanyProfile extends ProfileEntity {
     private String cnpj;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<Product> products = new ArrayList<>();
+    private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<ServiceOffering> services = new ArrayList<>();
+    private List<ServiceOffering> services = new ArrayList<>();
 
     public void addProduct(Product product) {
         if (product != null && !this.products.contains(product))
