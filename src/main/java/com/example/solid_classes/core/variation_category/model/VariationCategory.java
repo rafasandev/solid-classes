@@ -25,7 +25,7 @@ public class VariationCategory extends AuditableEntity {
     private MeasureUnit measureUnit;
     private String variationDescription;
 
-    @OneToMany(mappedBy = "variation_category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "variationCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariation> productVariations;
 
     public void addProductVariation(ProductVariation productVariation) {

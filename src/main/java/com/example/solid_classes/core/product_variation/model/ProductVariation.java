@@ -23,13 +23,12 @@ import lombok.experimental.SuperBuilder;
 public class ProductVariation extends AuditableEntity {
 
     private String variationValue;
-    private Double variationPrice;
 
     @ManyToOne
     @JoinColumn(name = "variation_category_id", nullable = false)
     private VariationCategory variationCategory;
 
-    @ManyToMany(mappedBy = "variationCategories")
+    @ManyToMany(mappedBy = "productVariations")
     private List<Product> products;
 
     public void setVariationCategory(VariationCategory variationCategory) {

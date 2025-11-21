@@ -13,6 +13,10 @@ public class ProductVariationService {
 
     private final ProductVariationPort productVariationPort;
 
+    public ProductVariation getById(java.util.UUID id) {
+        return productVariationPort.getById(id);
+    }
+
     public ProductVariation createProductVariation(ProductVariation newProductVariation) {
         return productVariationPort.save(newProductVariation);
     }

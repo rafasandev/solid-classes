@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.solid_classes.core.product_variation.dto.ProductVariationForm;
 import com.example.solid_classes.core.product_variation.dto.ProductVariationResponseDto;
+import com.example.solid_classes.core.product_variation.service.RegisterProductVariationUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,12 +19,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/product-variation")
 @RequiredArgsConstructor
 public class ProductVariationController {
-    
+
+    private final RegisterProductVariationUseCase productVariationService;
 
     @PostMapping
     public ResponseEntity<ProductVariationResponseDto> createProductVariation(@RequestBody ProductVariationForm variationForm) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+        ProductVariationResponseDto newVariation = productVariationService.registerProductVariation(variationForm);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newVariation);
     }
         
 }
