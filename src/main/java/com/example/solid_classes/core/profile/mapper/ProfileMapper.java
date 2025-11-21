@@ -2,10 +2,10 @@ package com.example.solid_classes.core.profile.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.solid_classes.core.profile.dto.CompanyProfileForm;
-import com.example.solid_classes.core.profile.dto.CompanyProfileResponseDto;
-import com.example.solid_classes.core.profile.dto.IndividualProfileForm;
-import com.example.solid_classes.core.profile.dto.IndividualProfileResponseDto;
+import com.example.solid_classes.core.profile.dto.company.CompanyProfileForm;
+import com.example.solid_classes.core.profile.dto.company.CompanyProfileResponseDto;
+import com.example.solid_classes.core.profile.dto.individual.IndividualProfileForm;
+import com.example.solid_classes.core.profile.dto.individual.IndividualProfileResponseDto;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 import com.example.solid_classes.core.profile.model.individual.IndividualProfile;
 import com.example.solid_classes.core.user.model.User;

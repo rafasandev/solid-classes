@@ -3,8 +3,8 @@ package com.example.solid_classes.core.variation_category.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.solid_classes.core.variation_category.dto.VariationCategoryForm;
 import com.example.solid_classes.core.variation_category.dto.VariationCategoryResponseDto;
+import com.example.solid_classes.core.variation_category.dto.variation_global.VariationCategoryGlobalForm;
 import com.example.solid_classes.core.variation_category.service.RegisterVariationCategoryUseCase;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class VariationCategoryController {
     private final RegisterVariationCategoryUseCase variationCategoryService;
 
     @PostMapping
-    public ResponseEntity<VariationCategoryResponseDto> createVariationCategory(@RequestBody VariationCategoryForm variationForm) {
+    public ResponseEntity<VariationCategoryResponseDto> createVariationCategory(@RequestBody VariationCategoryGlobalForm variationForm) {
         VariationCategoryResponseDto variationCategory = variationCategoryService.registerVariationCategory(variationForm);
         return ResponseEntity.status(HttpStatus.CREATED).body(variationCategory);
     }

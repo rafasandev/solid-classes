@@ -2,18 +2,21 @@ package com.example.solid_classes.core.product_variation.mapper;
 
 import org.springframework.stereotype.Component;
 
+import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.product_variation.dto.ProductVariationForm;
 import com.example.solid_classes.core.product_variation.dto.ProductVariationResponseDto;
 import com.example.solid_classes.core.product_variation.model.ProductVariation;
-import com.example.solid_classes.core.variation_category.model.VariationCategory;
+import com.example.solid_classes.core.variation_category.model.VariationCategoryEntity;
 
 @Component
 public class ProductVariationMapper {
-    public ProductVariation toEntity(ProductVariationForm variationForm, VariationCategory category) {
+    public ProductVariation toEntity(ProductVariationForm variationForm, VariationCategoryEntity category, Product product) {
         ProductVariation newVariation = ProductVariation.builder()
             .variationValue(variationForm.getVariationValue())
-            .variationPrice(variationForm.getVariationPrice())
+            .valueType(variationForm.getValueType())
+            .variationAdditionalPrice(variationForm.getVariationAdditionalPrice())
             .variationCategory(category)
+            .product(product)
             .build();
         return newVariation;
     }
@@ -22,8 +25,9 @@ public class ProductVariationMapper {
         return ProductVariationResponseDto.builder()
             .id(variation.getId())
             .variationValue(variation.getVariationValue())
-            .variationPrice(variation.getVariationPrice())
-            .variationCategoryName(variation.getVariationCategory().getVariationName())
+            .variationPrice(variation.getVariationAdditionalPrice())
+            .variationCategoryName(variation.getVariationCategory().getName())
+            .variationProductName(variation.getProduct().getProductName())
             .build();
     }
 }

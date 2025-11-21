@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,10 @@ public class Product extends AuditableEntity {
     @Column(nullable = false, unique = true)
     private String productName;
 
+    private String description;
+    private double priceBase;
+    private int stockQuantity;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
@@ -37,12 +42,7 @@ public class Product extends AuditableEntity {
     @JoinColumn(name = "company_id")
     private CompanyProfile company;
 
-    @ManyToMany
-    @JoinTable(
-        name = "product_variation_products",
-        joinColumns = @JoinColumn(name = "product_id"),
-        inverseJoinColumns = @JoinColumn(name = "product_variation_id")
-    )
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ProductVariation> productVariations;
 
     public void setCategory(Category category) {
@@ -67,6 +67,10 @@ public class Product extends AuditableEntity {
 
     public void addProductVariation(ProductVariation productVariation) {
         this.productVariations.add(productVariation);
+    }
+
+    public void removeProductVariation(ProductVariation productVariation) {
+        this.productVariations.remove(productVariation);
     }
 
 }

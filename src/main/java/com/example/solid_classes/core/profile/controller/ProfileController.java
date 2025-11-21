@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.solid_classes.core.profile.dto.CompanyProfileForm;
-import com.example.solid_classes.core.profile.dto.CompanyProfileResponseDto;
-import com.example.solid_classes.core.profile.dto.IndividualProfileForm;
-import com.example.solid_classes.core.profile.dto.IndividualProfileResponseDto;
+import com.example.solid_classes.core.profile.dto.company.CompanyProfileForm;
+import com.example.solid_classes.core.profile.dto.company.CompanyProfileResponseDto;
+import com.example.solid_classes.core.profile.dto.individual.IndividualProfileForm;
+import com.example.solid_classes.core.profile.dto.individual.IndividualProfileResponseDto;
 import com.example.solid_classes.core.profile.service.RegisterProfileUseCase;
 
 import lombok.RequiredArgsConstructor;

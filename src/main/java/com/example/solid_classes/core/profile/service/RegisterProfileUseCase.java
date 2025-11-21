@@ -3,10 +3,10 @@ package com.example.solid_classes.core.profile.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.solid_classes.core.profile.dto.CompanyProfileForm;
-import com.example.solid_classes.core.profile.dto.CompanyProfileResponseDto;
-import com.example.solid_classes.core.profile.dto.IndividualProfileForm;
-import com.example.solid_classes.core.profile.dto.IndividualProfileResponseDto;
+import com.example.solid_classes.core.profile.dto.company.CompanyProfileForm;
+import com.example.solid_classes.core.profile.dto.company.CompanyProfileResponseDto;
+import com.example.solid_classes.core.profile.dto.individual.IndividualProfileForm;
+import com.example.solid_classes.core.profile.dto.individual.IndividualProfileResponseDto;
 import com.example.solid_classes.core.profile.mapper.ProfileMapper;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 import com.example.solid_classes.core.profile.model.individual.IndividualProfile;

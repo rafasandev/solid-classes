@@ -14,6 +14,7 @@ public class ProductMapper {
     public Product toEntity(ProductForm productForm, Category category, CompanyProfile company) {
         Product product = Product.builder()
                 .productName(productForm.getProductName())
+                .description(productForm.getProductDescription())
                 .category(category)
                 .company(company)
                 .build();
@@ -24,6 +25,7 @@ public class ProductMapper {
         ProductResponseDto responseDto = ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getProductName())
+                .description(product.getDescription())
                 .categoryName(product.getCategory().getCategoryName())
                 .companyName(product.getCompany().getCompanyName())
                 .build();

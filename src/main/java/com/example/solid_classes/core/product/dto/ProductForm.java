@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public class ProductForm {
     private String productName;
+    private String productDescription;
     private UUID categoryId;
     private UUID companyId;
 }

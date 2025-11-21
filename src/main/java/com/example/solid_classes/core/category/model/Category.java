@@ -6,11 +6,13 @@ import java.util.List;
 import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
+import com.example.solid_classes.core.variation_category.model.variation_global.VariationCategoryGlobal;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -33,6 +35,9 @@ public class Category extends AuditableEntity {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ServiceOffering> services = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "categories")
+    private List<VariationCategoryGlobal> variationCategories = new ArrayList<>();
+
     public void addProduct(Product product) {
         if (product != null && !this.products.contains(product))
             this.products.add(product);
@@ -51,6 +56,16 @@ public class Category extends AuditableEntity {
     public void removeService(ServiceOffering service) {
         if (service != null && this.services.contains(service))
             this.services.remove(service);
+    }
+
+    public void addVariationCategory(VariationCategoryGlobal variationCategory) {
+        if (variationCategory != null && !this.variationCategories.contains(variationCategory))
+            this.variationCategories.add(variationCategory);
+    }
+
+    public void removeVariationCategory(VariationCategoryGlobal variationCategory) {
+        if (variationCategory != null && this.variationCategories.contains(variationCategory))
+            this.variationCategories.remove(variationCategory);
     }
 
 }

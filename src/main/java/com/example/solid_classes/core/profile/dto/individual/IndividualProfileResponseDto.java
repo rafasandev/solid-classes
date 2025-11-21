@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.profile.dto;
+package com.example.solid_classes.core.profile.dto.individual;
 
 import java.util.UUID;
 

@@ -10,4 +10,5 @@ public class ProductVariationResponseDto {
     private String variationValue;
     private Double variationPrice;
     private String variationCategoryName;
+    private String variationProductName;
 }

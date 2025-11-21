@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.profile.dto;
+package com.example.solid_classes.core.profile.dto.company;
 
 import com.example.solid_classes.core.user.dto.UserRegisterForm;
 

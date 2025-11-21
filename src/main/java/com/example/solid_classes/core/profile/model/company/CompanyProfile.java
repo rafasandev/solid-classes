@@ -6,6 +6,7 @@ import java.util.List;
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.profile.model.ProfileEntity;
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
+import com.example.solid_classes.core.variation_category.model.variation_seller.VariationCategorySeller;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,6 +37,9 @@ public class CompanyProfile extends ProfileEntity {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ServiceOffering> services = new ArrayList<>();
 
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<VariationCategorySeller> variationCategories = new ArrayList<>();
+
     public void addProduct(Product product) {
         if (product != null && !this.products.contains(product))
             this.products.add(product);
@@ -54,5 +58,15 @@ public class CompanyProfile extends ProfileEntity {
     public void removeService(ServiceOffering service) {
         if (service != null && this.services.contains(service))
             this.services.remove(service);
+    }
+
+    public void addVariationCategory(VariationCategorySeller variationCategory) {
+        if (variationCategory != null && !this.variationCategories.contains(variationCategory))
+            this.variationCategories.add(variationCategory);
+    }
+    
+    public void removeVariationCategory(VariationCategorySeller variationCategory) {
+        if (variationCategory != null && this.variationCategories.contains(variationCategory))
+            this.variationCategories.remove(variationCategory);
     }
 }
