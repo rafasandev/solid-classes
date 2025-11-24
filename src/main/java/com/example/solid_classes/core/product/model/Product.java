@@ -30,7 +30,6 @@ public class Product extends AuditableEntity {
 
     private String description;
     private double priceBase;
-    private int stockQuantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

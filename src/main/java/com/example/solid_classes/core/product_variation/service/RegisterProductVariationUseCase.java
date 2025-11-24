@@ -29,6 +29,8 @@ public class RegisterProductVariationUseCase {
         Product product = productService.getById(variationForm.getProductId());
 
         ProductVariation newVariation = productVariationMapper.toEntity(variationForm, category, product);
+        newVariation.setStockQuantity(0); // Inicializa a quantidade em estoque como 0
+
         ProductVariation savedVariation = productVariationService.createProductVariation(newVariation);
         ProductVariationResponseDto variationResponse = productVariationMapper.toResponseDto(savedVariation);
         return variationResponse;

@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -24,6 +25,9 @@ public class ProductVariation extends AuditableEntity {
     private String variationValue;
     private VariationValueType valueType;
     private double variationAdditionalPrice;
+
+    @Setter
+    private int stockQuantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "variation_category_id", nullable = false)
