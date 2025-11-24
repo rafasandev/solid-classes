@@ -58,14 +58,6 @@ public class Category extends AuditableEntity {
             this.services.remove(service);
     }
 
-    public void addVariationCategory(VariationCategoryGlobal variationCategory) {
-        if (variationCategory != null && !this.variationCategories.contains(variationCategory))
-            this.variationCategories.add(variationCategory);
-    }
 
-    public void removeVariationCategory(VariationCategoryGlobal variationCategory) {
-        if (variationCategory != null && this.variationCategories.contains(variationCategory))
-            this.variationCategories.remove(variationCategory);
-    }
 
 }

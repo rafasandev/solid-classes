@@ -17,6 +17,7 @@ public class ProductVariationMapper {
             .variationAdditionalPrice(variationForm.getVariationAdditionalPrice())
             .variationCategory(category)
             .product(product)
+            .stockQuantity(0)
             .build();
         return newVariation;
     }

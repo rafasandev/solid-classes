@@ -3,6 +3,8 @@ package com.example.solid_classes.core.profile.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.solid_classes.core.cart.service.CartService;
+import com.example.solid_classes.core.cart.service.RegisterCartUseCase;
 import com.example.solid_classes.core.profile.dto.company.CompanyProfileForm;
 import com.example.solid_classes.core.profile.dto.company.CompanyProfileResponseDto;
 import com.example.solid_classes.core.profile.dto.individual.IndividualProfileForm;
@@ -25,6 +27,7 @@ public class RegisterProfileUseCase {
     private final IndividualProfileService individualProfileService;
     private final CompanyProfileService companyProfileService;
     private final ProfileMapper profileMapper;
+    private final RegisterCartUseCase cartService;
 
     @Transactional
     public CompanyProfileResponseDto registerCompany(CompanyProfileForm companyForm) {
@@ -40,6 +43,7 @@ public class RegisterProfileUseCase {
         User user = userService.signUp(individualForm.getEmail(), individualForm.getPassword());
         IndividualProfile newProfile = profileMapper.toEntity(individualForm, user);
         IndividualProfile savedProfile = individualProfileService.registerProfile(newProfile);
+        cartService.createCartOnProfileCreation(savedProfile);
         IndividualProfileResponseDto responseDto = profileMapper.toResponseDto(savedProfile);
         return responseDto;
     }

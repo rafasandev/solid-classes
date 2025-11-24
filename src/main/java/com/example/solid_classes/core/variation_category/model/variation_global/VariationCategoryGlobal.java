@@ -25,4 +25,14 @@ public class VariationCategoryGlobal extends VariationCategoryEntity {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "category_global_variations_mapping", joinColumns = @JoinColumn(name = "global_variation_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categories;
+
+    public void addCategory(Category category) {
+        if (category != null && !this.categories.contains(category))
+            this.categories.add(category);
+    }
+
+    public void removeCategory(Category category) {
+        if (category != null && this.categories.contains(category))
+            this.categories.remove(category);
+    }
 }
