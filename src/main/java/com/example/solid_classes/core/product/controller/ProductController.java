@@ -22,7 +22,7 @@ public class ProductController {
 
     private final RegisterProductUseCase productService;
 
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductForm productForm) {
         ProductResponseDto productResponse = productService.registerProduct(productForm);
         return ResponseEntity.status(HttpStatus.CREATED).body(productResponse);

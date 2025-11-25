@@ -19,18 +19,20 @@ public class VariationCategoryMapper {
                 .type(variationCategoryGlobalForm.getType())
                 .measureUnit(variationCategoryGlobalForm.getMeasureUnit())
                 .description(variationCategoryGlobalForm.getVariationDescription())
+                .active(true)
                 .build();
-        return variationCategoryGlobal;
+                return variationCategoryGlobal;
     }
 
     public VariationCategorySeller toEntity(VariationCategorySellerForm variationCategorySellerForm,
-            CompanyProfile company) {
-        VariationCategorySeller variationCategorySeller = VariationCategorySeller.builder()
+        CompanyProfile company) {
+            VariationCategorySeller variationCategorySeller = VariationCategorySeller.builder()
                 .name(variationCategorySellerForm.getVariationName())
                 .type(variationCategorySellerForm.getType())
                 .measureUnit(variationCategorySellerForm.getMeasureUnit())
                 .description(variationCategorySellerForm.getVariationDescription())
                 .company(company)
+                .active(true)
                 .build();
 
         return variationCategorySeller;

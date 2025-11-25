@@ -24,7 +24,7 @@ public class CategoryController {
 
     private final RegisterCategoryUseCase categoryService;
     
-    @PostMapping("")
+    @PostMapping
     @PreAuthorize("hasRole('ADMIN_MASTER')")
     public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryForm categoryForm) {
         CategoryResponseDto newCategory = categoryService.registerCategory(categoryForm);

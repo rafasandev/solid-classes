@@ -18,16 +18,19 @@ public class ProfileMapper {
                 .user(user)
                 .companyName(profileForm.getCompanyName())
                 .cnpj(profileForm.getCnpj())
+                .businessSector(profileForm.getBusinessSector())
+                .active(true)
                 .build();
-        return companyProfile;
+                return companyProfile;
     }
-
+    
     public IndividualProfile toEntity(IndividualProfileForm profileForm, User user) {
-
+        
         IndividualProfile individualProfile = IndividualProfile.builder()
-                .user(user)
+        .user(user)
                 .name(profileForm.getName())
                 .cpf(profileForm.getCpf())
+                .active(true)
                 .build();
         return individualProfile;
     }
@@ -37,6 +40,7 @@ public class ProfileMapper {
                 .id(savedProfile.getId())
                 .companyName(savedProfile.getCompanyName())
                 .cnpj(savedProfile.getCnpj())
+                .businessSector(savedProfile.getBusinessSector())
                 .build();
         return responseDto;
     }

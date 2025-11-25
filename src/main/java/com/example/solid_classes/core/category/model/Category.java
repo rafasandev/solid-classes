@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.product.model.Product;
+import com.example.solid_classes.core.profile.model.company.enums.BusinessSector;
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 import com.example.solid_classes.core.variation_category.model.variation_global.VariationCategoryGlobal;
 
@@ -27,6 +28,9 @@ public class Category extends AuditableEntity {
 
     @Column(nullable = false, unique = true)
     private String categoryName;
+
+    @Column(nullable = false)
+    private BusinessSector businessSector;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;

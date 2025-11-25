@@ -32,8 +32,14 @@ public abstract class VariationCategoryEntity extends AuditableEntity {
     @Column(nullable = false)
     protected VariationType type;
 
+    @Column(nullable = false, unique = true)
     protected MeasureUnit measureUnit;
+
+    @Column(nullable = false)
     protected String description;
+
+    @Column(nullable = false)
+    protected boolean active;
 
     @OneToMany(mappedBy = "variationCategory", fetch = FetchType.LAZY)
     protected List<ProductVariation> productVariations;

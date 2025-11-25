@@ -1,5 +1,6 @@
 package com.example.solid_classes.core.profile.dto.company;
 
+import com.example.solid_classes.core.profile.model.company.enums.BusinessSector;
 import com.example.solid_classes.core.user.dto.UserRegisterForm;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -13,4 +14,7 @@ public class CompanyProfileForm extends UserRegisterForm {
 
     @NotEmpty(message = "O CNPJ deve ser informado")
     private String cnpj;
+
+    @NotEmpty(message = "O ramo de atividade deve ser informado")
+    private BusinessSector businessSector;
 }

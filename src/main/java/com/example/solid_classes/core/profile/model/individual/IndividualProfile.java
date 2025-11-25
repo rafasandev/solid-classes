@@ -1,10 +1,14 @@
 package com.example.solid_classes.core.profile.model.individual;
 
+import java.util.List;
+
 import com.example.solid_classes.core.cart.model.Cart;
+import com.example.solid_classes.core.order.model.Order;
 import com.example.solid_classes.core.profile.model.ProfileEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -26,5 +30,8 @@ public class IndividualProfile extends ProfileEntity{
 
     @OneToOne(mappedBy = "profile")
     private Cart cart;
+
+    @OneToMany(mappedBy = "customer", orphanRemoval = true)
+    private List<Order> orders;
 
 }

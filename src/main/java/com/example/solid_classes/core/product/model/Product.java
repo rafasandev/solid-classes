@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.category.model.Category;
+import com.example.solid_classes.core.order_item.model.OrderItem;
 import com.example.solid_classes.core.product_variation.model.ProductVariation;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 
@@ -51,6 +52,9 @@ public class Product extends AuditableEntity {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ProductVariation> productVariations;
 
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<OrderItem> orderItems;
+
     public void setCategory(Category category) {
         if (this.category != null) {
             this.category.removeProduct(this);
@@ -84,6 +88,18 @@ public class Product extends AuditableEntity {
     public void removeProductVariation(ProductVariation productVariation) {
         if (productVariation != null && this.productVariations != null) {
             this.productVariations.remove(productVariation);
+        }
+    }
+
+    public void addOrderItem(OrderItem orderItem) {
+        if (orderItem != null && this.orderItems != null) {
+            this.orderItems.add(orderItem);
+        }
+    }
+
+    public void removeOrderItem(OrderItem orderItem) {
+        if(orderItem != null && this.orderItems != null) {
+            this.orderItems.remove(orderItem);
         }
     }
 

@@ -34,9 +34,11 @@ public abstract class ProfileEntity {
     @JoinColumn(name = "user_id")
     protected User user;
 
+    protected boolean active;
+
     @CreatedDate
-    private LocalDateTime createdAt;
+    protected LocalDateTime createdAt;
 
     @LastModifiedDate
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 }

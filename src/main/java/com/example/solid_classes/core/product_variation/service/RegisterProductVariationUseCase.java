@@ -3,6 +3,7 @@ package com.example.solid_classes.core.product_variation.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.product.service.ProductService;
 import com.example.solid_classes.core.product_variation.dto.ProductVariationForm;
@@ -17,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class RegisterProductVariationUseCase {
-    
+
     private final ProductVariationService productVariationService;
     private final ProductVariationMapper productVariationMapper;
     private final VariationCategoryGlobalService categoryService;
@@ -28,8 +29,11 @@ public class RegisterProductVariationUseCase {
         VariationCategoryEntity category = categoryService.getById(variationForm.getVariationCategoryId());
         Product product = productService.getById(variationForm.getProductId());
 
+        if (!category.isActive())
+            throw new BusinessRuleException("Categoria de variação inativa. Operação falhou");
+
         ProductVariation newVariation = productVariationMapper.toEntity(variationForm, category, product);
-        newVariation.setStockQuantity(0); // Inicializa a quantidade em estoque como 0
+        newVariation.setStockQuantity(0);
 
         ProductVariation savedVariation = productVariationService.createProductVariation(newVariation);
         ProductVariationResponseDto variationResponse = productVariationMapper.toResponseDto(savedVariation);

@@ -11,11 +11,12 @@ public class CategoryMapper {
     public Category toEntity(CategoryForm categoryForm) {
         return Category.builder()
                 .categoryName(categoryForm.getCategoryName())
+                .businessSector(categoryForm.getBusinessSector())
                 .build();
-    }
-
-    public CategoryResponseDto toResponseDto(Category category) {
-        CategoryResponseDto dto = CategoryResponseDto.builder()
+            }
+            
+            public CategoryResponseDto toResponseDto(Category category) {
+                CategoryResponseDto dto = CategoryResponseDto.builder()
                 .id(category.getId())
                 .name(category.getCategoryName())
                 .build();

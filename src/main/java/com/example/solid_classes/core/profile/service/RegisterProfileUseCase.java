@@ -35,19 +35,10 @@ public class RegisterProfileUseCase {
     private final RegisterCartUseCase cartService;
 
     @Transactional
-    public CompanyProfileResponseDto registerCompany(CompanyProfileForm companyForm) {
-        Role companyRole = roleService.getByRoleName(RoleName.COMPANY);
-        User user = userService.signUp(companyForm.getEmail(), companyForm.getPassword(), Set.of(companyRole));
-        CompanyProfile newProfile = profileMapper.toEntity(companyForm, user);
-        CompanyProfile savedProfile = companyProfileService.registerProfile(newProfile);
-        CompanyProfileResponseDto responseDto = profileMapper.toResponseDto(savedProfile);
-        return responseDto;
-    }
-
-    @Transactional
     public IndividualProfileResponseDto registerIndividual(IndividualProfileForm individualForm) {
         Role individualRole = roleService.getByRoleName(RoleName.INDIVIDUAL);
         User user = userService.signUp(individualForm.getEmail(), individualForm.getPassword(), Set.of(individualRole));
+
         IndividualProfile newProfile = profileMapper.toEntity(individualForm, user);
         IndividualProfile savedProfile = individualProfileService.registerProfile(newProfile);
         cartService.createCartOnProfileCreation(savedProfile);
@@ -55,4 +46,14 @@ public class RegisterProfileUseCase {
         return responseDto;
     }
 
+    @Transactional
+    public CompanyProfileResponseDto registerCompany(CompanyProfileForm companyForm) {
+        Role companyRole = roleService.getByRoleName(RoleName.COMPANY);
+        User user = userService.signUp(companyForm.getEmail(), companyForm.getPassword(), Set.of(companyRole));
+
+        CompanyProfile newProfile = profileMapper.toEntity(companyForm, user);
+        CompanyProfile savedProfile = companyProfileService.registerProfile(newProfile);
+        CompanyProfileResponseDto responseDto = profileMapper.toResponseDto(savedProfile);
+        return responseDto;
+    }
 }

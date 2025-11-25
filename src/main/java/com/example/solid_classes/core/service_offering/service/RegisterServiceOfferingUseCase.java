@@ -3,9 +3,11 @@ package com.example.solid_classes.core.service_offering.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.category.model.Category;
 import com.example.solid_classes.core.category.service.CategoryService;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
+import com.example.solid_classes.core.profile.model.company.enums.BusinessSector;
 import com.example.solid_classes.core.profile.service.company.CompanyProfileService;
 import com.example.solid_classes.core.service_offering.dto.ServiceOfferingForm;
 import com.example.solid_classes.core.service_offering.dto.ServiceOfferingResponseDto;
@@ -27,6 +29,12 @@ public class RegisterServiceOfferingUseCase {
     public ServiceOfferingResponseDto registerServiceOffering(ServiceOfferingForm serviceForm) {
         Category category = categoryService.getById(serviceForm.getCategoryId());
         CompanyProfile company = companyProfileService.getById(serviceForm.getCompanyId());
+
+        if(!company.isActive())
+            throw new BusinessRuleException("Empresa inativa. Operação negada");
+
+        if(company.getBusinessSector() != BusinessSector.SERVICE)
+            throw new BusinessRuleException("Ramo da empresa apenas permite operações com serviços");
 
         ServiceOffering newService = serviceOfferingMapper.toEntity(serviceForm, category, company);
         ServiceOffering savedService = serviceOfferingService.createService(newService);

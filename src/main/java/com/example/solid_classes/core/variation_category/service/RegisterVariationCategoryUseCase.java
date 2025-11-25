@@ -3,6 +3,7 @@ package com.example.solid_classes.core.variation_category.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 import com.example.solid_classes.core.profile.service.company.CompanyProfileService;
 import com.example.solid_classes.core.variation_category.dto.VariationCategoryResponseDto;
@@ -36,6 +37,9 @@ public class RegisterVariationCategoryUseCase {
     @Transactional
     public VariationCategoryResponseDto registerVariationCategory(VariationCategorySellerForm variationCategoryForm) {
         CompanyProfile company = companyProfileService.getById(variationCategoryForm.getCompanyId());
+
+        if(!company.isActive())
+            throw new BusinessRuleException("Empresa inativa. Operação falhou");
 
         VariationCategorySeller variationCategory = variationCategoryMapper.toEntity(variationCategoryForm, company);
         VariationCategorySeller savedVariationCategory = variationCategorySellerService.createVariationCategory(variationCategory);
