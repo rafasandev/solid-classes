@@ -8,6 +8,7 @@ import com.example.solid_classes.core.variation_category.model.enums.MeasureUnit
 import com.example.solid_classes.core.variation_category.model.enums.VariationType;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Inheritance(strategy = InheritanceType.JOINED)
+@Entity
 @Table(name = "variation_categories")
 @Getter
 @SuperBuilder

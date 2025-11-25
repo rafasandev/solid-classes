@@ -44,12 +44,9 @@ public class User extends AuditableEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (roles == null) {
-            return java.util.Collections.emptyList();
-        }
-        return roles.stream()
-            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
-            .toList();
+        return roles == null
+                ? java.util.Collections.emptyList()
+                : roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name())).toList();
     }
 
     @Override
