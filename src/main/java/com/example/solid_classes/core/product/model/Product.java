@@ -3,7 +3,6 @@ package com.example.solid_classes.core.product.model;
 import java.util.List;
 
 import com.example.solid_classes.common.base.AuditableEntity;
-import com.example.solid_classes.core.cart_item.model.CartItem;
 import com.example.solid_classes.core.category.model.Category;
 import com.example.solid_classes.core.product_variation.model.ProductVariation;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
@@ -43,9 +42,6 @@ public class Product extends AuditableEntity {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ProductVariation> productVariations;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<CartItem> cartItems;
-
     public void setCategory(Category category) {
         this.category.removeProduct(this);
         if (this.category != null)
@@ -67,19 +63,13 @@ public class Product extends AuditableEntity {
     }
 
     public void addProductVariation(ProductVariation productVariation) {
-        this.productVariations.add(productVariation);
+        if (productVariation != null && this.productVariations != null)
+            this.productVariations.add(productVariation);
     }
 
     public void removeProductVariation(ProductVariation productVariation) {
-        this.productVariations.remove(productVariation);
-    }
-
-    public void addCartItem(CartItem cartItem) {
-        this.cartItems.add(cartItem);
-    }
-
-    public void removeCartItem(CartItem cartItem) {
-        this.cartItems.remove(cartItem);
+        if (productVariation != null && this.productVariations != null)
+            this.productVariations.remove(productVariation);
     }
 
 }

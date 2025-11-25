@@ -36,10 +36,10 @@ public class RegisterCartItemUseCase {
 
         if (optCart.isPresent()) {
             newItem = optCart.get();
-            newItem.addItemCart(cartItemForm.getItemQuantity());
+            newItem.addQuantity(cartItemForm.getItemQuantity());
         } else {
             newItem = cartItemMapper.toEntity(cartItemForm, product, cart);
-            newItem.initCartItems();
+            newItem.setQuantity(cartItemForm.getItemQuantity());
         }
 
         CartItem savedItem = cartItemService.createCartItem(newItem);

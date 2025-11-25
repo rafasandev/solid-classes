@@ -16,6 +16,7 @@ public class CartItemMapper {
             .product(product)
             .cart(cart)
             .productQuantity(cartItemForm.getItemQuantity())
+            .unitPriceSnapshot(product.getPriceBase())
             .build();
         return newItem;
     }

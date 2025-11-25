@@ -34,6 +34,12 @@ public class UserService {
         return userPort.save(user);
     }
 
+    public User signUp(String email, String password, Set<Role> roles) {
+        String passwordEncoded = passwordEncoder.encode(password);
+        User user = userMapper.toEntity(email, passwordEncoded, roles);
+        return userPort.save(user);
+    }
+
     public User adminSignUp(String email, String password, Set<Role> roles) {
         String passwordEncoded = passwordEncoder.encode(password);
         User user = userMapper.toEntity(email, passwordEncoded, roles);

@@ -1,6 +1,5 @@
 package com.example.solid_classes.core.profile.model.company;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.example.solid_classes.core.product.model.Product;
@@ -32,41 +31,41 @@ public class CompanyProfile extends ProfileEntity {
     private String cnpj;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Product> products = new ArrayList<>();
+    private List<Product> products;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ServiceOffering> services = new ArrayList<>();
+    private List<ServiceOffering> services;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<VariationCategorySeller> variationCategories = new ArrayList<>();
+    private List<VariationCategorySeller> variationCategories;
 
     public void addProduct(Product product) {
-        if (product != null && !this.products.contains(product))
+        if (product != null && this.products != null && !this.products.contains(product))
             this.products.add(product);
     }
 
     public void removeProduct(Product product) {
-        if (product != null && this.products.contains(product))
+        if (product != null && this.products != null && this.products.contains(product))
             this.products.remove(product);
     }
 
     public void addService(ServiceOffering service) {
-        if (service != null && !this.services.contains(service))
+        if (service != null && this.services != null && !this.services.contains(service))
             this.services.add(service);
     }
 
     public void removeService(ServiceOffering service) {
-        if (service != null && this.services.contains(service))
+        if (service != null && this.services != null && this.services.contains(service))
             this.services.remove(service);
     }
 
     public void addVariationCategory(VariationCategorySeller variationCategory) {
-        if (variationCategory != null && !this.variationCategories.contains(variationCategory))
+        if (variationCategory != null && this.variationCategories != null && !this.variationCategories.contains(variationCategory))
             this.variationCategories.add(variationCategory);
     }
     
     public void removeVariationCategory(VariationCategorySeller variationCategory) {
-        if (variationCategory != null && this.variationCategories.contains(variationCategory))
+        if (variationCategory != null && this.variationCategories != null && this.variationCategories.contains(variationCategory))
             this.variationCategories.remove(variationCategory);
     }
 }
