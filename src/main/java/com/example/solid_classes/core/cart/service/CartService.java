@@ -26,4 +26,8 @@ public class CartService {
     public Cart createCart(Cart cart) {
         return cartPort.save(cart);
     }
+
+    public void clearCart(Cart cart) {
+        
+    }
 }

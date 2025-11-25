@@ -18,4 +18,8 @@ public class OrderService {
     public Order getById(UUID id) {
         return orderPort.getById(id);
     }
+
+    public Order registerOrder(Order newOrder) {
+        return orderPort.save(newOrder);
+    }
 }

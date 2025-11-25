@@ -1,5 +1,7 @@
 package com.example.solid_classes.core.cart_item.model;
 
+import java.math.BigDecimal;
+
 import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.cart.model.Cart;
 import com.example.solid_classes.core.cart_item.model.enums.ReservationStatus;
@@ -20,28 +22,26 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "cart_items",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"cart_id", "product_id"}),
-    indexes = {
-        @Index(name = "idx_cart_item_cart", columnList = "cart_id"),
-        @Index(name = "idx_cart_item_product", columnList = "product_id")
-    }
-)
+@Table(name = "cart_items", uniqueConstraints = @UniqueConstraint(columnNames = { "cart_id",
+        "product_id" }), indexes = {
+                @Index(name = "idx_cart_item_cart", columnList = "cart_id"),
+                @Index(name = "idx_cart_item_product", columnList = "product_id")
+        })
 @Getter
 @SuperBuilder
 @NoArgsConstructor
-public class CartItem extends AuditableEntity{
+public class CartItem extends AuditableEntity {
 
     @Column(nullable = false)
     private int productQuantity;
-    
+
     @Column(nullable = false)
-    private double unitPriceSnapshot;
-    
+    private BigDecimal unitPriceSnapshot;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ReservationStatus status;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     private Product product;
@@ -68,8 +68,8 @@ public class CartItem extends AuditableEntity{
         }
     }
 
-    public double calculateSubtotal() {
-        return this.unitPriceSnapshot * this.productQuantity;
+    public BigDecimal calculateSubtotal() {
+        return this.unitPriceSnapshot.multiply(BigDecimal.valueOf(this.productQuantity));
     }
 
     public void reserve() {

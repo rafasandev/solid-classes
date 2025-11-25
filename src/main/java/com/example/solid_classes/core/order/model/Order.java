@@ -1,5 +1,6 @@
 package com.example.solid_classes.core.order.model;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.example.solid_classes.common.base.AuditableEntity;
@@ -19,6 +20,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -32,8 +34,13 @@ public class Order extends AuditableEntity {
     private String pickUpcode;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status;
 
+    @Column(nullable = false)
+    private BigDecimal orderTotal;
+    
+    @Setter
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
