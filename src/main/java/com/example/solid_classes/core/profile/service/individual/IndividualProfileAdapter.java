@@ -1,13 +1,13 @@
 package com.example.solid_classes.core.profile.service.individual;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.profile.model.individual.IndividualProfile;
 import com.example.solid_classes.core.profile.ports.IndividualProfilePort;
 import com.example.solid_classes.core.profile.repository.IndividualProfileRepository;
 
-@Service
+@Component
 public class IndividualProfileAdapter extends NamedCrudAdapter<IndividualProfile, IndividualProfileRepository> implements IndividualProfilePort {
     
     public IndividualProfileAdapter(IndividualProfileRepository individualProfileRepository) {

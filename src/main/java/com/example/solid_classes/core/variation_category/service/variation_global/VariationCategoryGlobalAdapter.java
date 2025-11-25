@@ -1,13 +1,13 @@
 package com.example.solid_classes.core.variation_category.service.variation_global;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.variation_category.model.variation_global.VariationCategoryGlobal;
 import com.example.solid_classes.core.variation_category.ports.VariationCategoryGlobalPort;
 import com.example.solid_classes.core.variation_category.repository.VariationCategoryGlobalRepository;
 
-@Service
+@Component
 public class VariationCategoryGlobalAdapter
         extends NamedCrudAdapter<VariationCategoryGlobal, VariationCategoryGlobalRepository>
         implements VariationCategoryGlobalPort {
