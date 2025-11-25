@@ -43,9 +43,18 @@ public class CheckoutOrderUseCase {
         Cart cart = cartService.getById(orderCheckoutForm.getCartId());
         IndividualProfile customer = customerService.getById(orderCheckoutForm.getCustomerId());
 
-        if (cart.getId() != customer.getId()) {
+        // CORREÇÃO: Usar .equals() para comparar UUIDs
+        if (!cart.getId().equals(customer.getId())) {
             throw new UserRuleException("Carrinho com os pedidos não pertencem ao usuário atual");
         }
+
+        // CORREÇÃO: Validar se carrinho não está vazio
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new UserRuleException("Carrinho está vazio");
+        }
+
+        // CORREÇÃO: Validar estoque de todos os produtos antes de processar
+        validateStock(cart.getItems());
 
         Map<CompanyProfile, List<CartItem>> itemsBySeller = groupItemsBySeller(cart.getItems());
 
@@ -55,27 +64,48 @@ public class CheckoutOrderUseCase {
             CompanyProfile seller = entry.getKey();
             List<CartItem> storeItems = entry.getValue();
 
+            // CORREÇÃO: Calcular total corretamente com BigDecimal imutável
             BigDecimal orderTotal = calculateOrderTotal(storeItems);
 
             Order order = Order.builder()
                     .customer(cart.getProfile())
                     .company(seller)
-                    .pickUpcode(generateUniqueCode())
+                    .pickUpcode(generateUniquePickupCode())
                     .status(OrderStatus.PENDENTE)
                     .orderTotal(orderTotal)
                     .build();
 
             List<OrderItem> orderItems = storeItems
                     .stream()
-                    .map(cartItem -> orderItemService.createOrderItemSnapshot(cartItem, order))
+                    .map(cartItem -> {
+                        // CORREÇÃO: Reservar produto e diminuir estoque
+                        cartItem.reserve();
+                        cartItem.getProduct().decreaseStock(cartItem.getProductQuantity());
+                        return orderItemService.createOrderItemSnapshot(cartItem, order);
+                    })
                     .toList();
 
             order.setOrderItems(orderItems);
 
             savedOrders.add(orderService.registerOrder(order));
         }
+        
+        // CORREÇÃO: Limpar carrinho após sucesso
         cartService.clearCart(cart);
         return orderMapper.toResponseDtoList(savedOrders);
+    }
+
+    private void validateStock(List<CartItem> items) {
+        for (CartItem item : items) {
+            if (!item.getProduct().hasStock(item.getProductQuantity())) {
+                throw new UserRuleException(
+                    String.format("Produto '%s' não possui estoque suficiente. Disponível: %d, Solicitado: %d",
+                        item.getProduct().getProductName(),
+                        item.getProduct().getStockQuantity(),
+                        item.getProductQuantity())
+                );
+            }
+        }
     }
 
     private Map<CompanyProfile, List<CartItem>> groupItemsBySeller(List<CartItem> items) {
@@ -86,28 +116,38 @@ public class CheckoutOrderUseCase {
     }
 
     private BigDecimal calculateOrderTotal(List<CartItem> storeItems) {
-        BigDecimal total = BigDecimal.ZERO;
-
-        for (CartItem item : storeItems) {
-            total.add(item.calculateSubtotal());
-        }
-
-        return total;
+        // CORREÇÃO: BigDecimal é imutável, precisa atribuir o resultado
+        return storeItems.stream()
+            .map(CartItem::calculateSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private static String generateUniqueCode() {
+    private String generateUniquePickupCode() {
         String CHAR_POOL = "23456789ACDEFGHJKMNPQRSTUVWXYZ";
         int CODE_LENGTH = 5;
         SecureRandom random = new SecureRandom();
-        StringBuilder code = new StringBuilder(CODE_LENGTH);
+        String code;
+        int maxAttempts = 10;
+        int attempts = 0;
 
-        code.append("#");
+        // CORREÇÃO: Garantir unicidade do código de retirada
+        do {
+            StringBuilder codeBuilder = new StringBuilder(CODE_LENGTH + 1);
+            codeBuilder.append("#");
+            
+            for (int i = 0; i < CODE_LENGTH; i++) {
+                int randomIndex = random.nextInt(CHAR_POOL.length());
+                codeBuilder.append(CHAR_POOL.charAt(randomIndex));
+            }
+            
+            code = codeBuilder.toString();
+            attempts++;
+            
+            if (attempts >= maxAttempts) {
+                throw new UserRuleException("Não foi possível gerar código único de retirada. Tente novamente.");
+            }
+        } while (orderService.existsByPickupCode(code));
 
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            int randomIndex = random.nextInt(CHAR_POOL.length());
-            code.append(CHAR_POOL.charAt(randomIndex));
-        }
-
-        return code.toString();
+        return code;
     }
 }

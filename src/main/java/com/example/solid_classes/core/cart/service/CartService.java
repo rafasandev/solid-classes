@@ -28,6 +28,10 @@ public class CartService {
     }
 
     public void clearCart(Cart cart) {
-        
+        // CORREÇÃO: Implementar limpeza real do carrinho
+        if (cart.getItems() != null) {
+            cart.getItems().clear();
+            cartPort.save(cart);
+        }
     }
 }

@@ -31,13 +31,40 @@ public class RegisterCartItemUseCase {
         Cart cart = cartService.getByProfileId(cartItemForm.getUserId());
         Product product = productService.getById(cartItemForm.getProductId());
 
+        // CORREÇÃO: Validar se produto está disponível
+        if (!product.isAvailable()) {
+            throw new com.example.solid_classes.common.exception.UserRuleException(
+                String.format("Produto '%s' não está disponível para venda", product.getProductName())
+            );
+        }
+
         Optional<CartItem> optCart = cartItemService.getByProductIdAndCartId(cartItemForm.getProductId(), cart.getId());
         CartItem newItem;
 
         if (optCart.isPresent()) {
             newItem = optCart.get();
+            int newQuantity = newItem.getProductQuantity() + cartItemForm.getItemQuantity();
+            
+            // CORREÇÃO: Validar estoque antes de adicionar quantidade
+            if (!product.hasStock(newQuantity)) {
+                throw new com.example.solid_classes.common.exception.UserRuleException(
+                    String.format("Estoque insuficiente para '%s'. Disponível: %d, Solicitado: %d",
+                        product.getProductName(),
+                        product.getStockQuantity(),
+                        newQuantity)
+                );
+            }
             newItem.addQuantity(cartItemForm.getItemQuantity());
         } else {
+            // CORREÇÃO: Validar estoque antes de criar novo item
+            if (!product.hasStock(cartItemForm.getItemQuantity())) {
+                throw new com.example.solid_classes.common.exception.UserRuleException(
+                    String.format("Estoque insuficiente para '%s'. Disponível: %d, Solicitado: %d",
+                        product.getProductName(),
+                        product.getStockQuantity(),
+                        cartItemForm.getItemQuantity())
+                );
+            }
             newItem = cartItemMapper.toEntity(cartItemForm, product, cart);
             newItem.setQuantity(cartItemForm.getItemQuantity());
         }

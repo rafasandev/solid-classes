@@ -13,4 +13,9 @@ public class OrderAdapter extends NamedCrudAdapter<Order, OrderRepository> imple
     public OrderAdapter(OrderRepository orderRepository) {
         super(orderRepository, "Pedido");
     }
+
+    @Override
+    public boolean existsByPickUpcode(String pickUpcode) {
+        return repository.existsByPickUpcode(pickUpcode);
+    }
 }

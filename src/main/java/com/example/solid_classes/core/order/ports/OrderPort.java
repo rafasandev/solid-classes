@@ -5,4 +5,5 @@ import com.example.solid_classes.core.order.model.Order;
 
 public interface OrderPort extends NamedCrudPort<Order>{
     
+    boolean existsByPickUpcode(String pickUpcode);
 }

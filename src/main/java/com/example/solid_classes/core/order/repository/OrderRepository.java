@@ -8,4 +8,5 @@ import com.example.solid_classes.core.order.model.Order;
 
 public interface OrderRepository extends JpaRepository<Order, UUID>{
     
+    boolean existsByPickUpcode(String pickUpcode);
 }

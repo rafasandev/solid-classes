@@ -22,4 +22,8 @@ public class OrderService {
     public Order registerOrder(Order newOrder) {
         return orderPort.save(newOrder);
     }
+
+    public boolean existsByPickupCode(String pickupCode) {
+        return orderPort.existsByPickUpcode(pickupCode);
+    }
 }
