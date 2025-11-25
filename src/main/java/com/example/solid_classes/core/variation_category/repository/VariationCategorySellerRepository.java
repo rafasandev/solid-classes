@@ -9,5 +9,5 @@ import com.example.solid_classes.core.variation_category.model.variation_seller.
 
 public interface VariationCategorySellerRepository extends JpaRepository<VariationCategorySeller, UUID> {
 
-    List<VariationCategorySeller> findByCompany(UUID companyId);
+    List<VariationCategorySeller> findByCompanyId(UUID companyId);
 }
