@@ -23,7 +23,7 @@ public class UserSeeder {
         String adminEmail = "admin@uniso.com";
         String adminPassword = "Senh@123";
         if (userRepository.findByEmail(adminEmail).isEmpty()) {
-            Role adminRole = roleService.getByRoleName(RoleName.ADMIN_MASTER);
+            Role adminRole = roleService.getByRoleName(RoleName.ADMIN);
             userService.adminSignUp(adminEmail, adminPassword, Set.of(adminRole));
         }
     }

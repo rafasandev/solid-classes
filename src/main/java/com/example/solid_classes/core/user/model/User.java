@@ -49,7 +49,7 @@ public class User extends AuditableEntity implements UserDetails {
 
         return roles.stream().map(role -> {
             switch (role.getName()) {
-                case ADMIN_MASTER:
+                case ADMIN:
                     return new SimpleGrantedAuthority("ROLE_ADMIN");
                 case COMPANY:
                     return new SimpleGrantedAuthority("ROLE_COMPANY");

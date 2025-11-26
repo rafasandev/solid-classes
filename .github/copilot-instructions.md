@@ -221,7 +221,7 @@ Product product = Product.builder()
 **Transaction Boundaries**: Apply `@Transactional` on use case methods, not on simple CRUD operations in adapters/services.
 
 **Role Management**: Users must have roles assigned during signup:
-- Use `RoleService.getByRoleName()` to fetch roles (COMPANY, INDIVIDUAL, ADMIN_MASTER)
+ - Use `RoleService.getByRoleName()` to fetch roles (COMPANY, INDIVIDUAL, ADMIN)
 - Pass roles to `UserService.signUp(email, password, roles)`
 - COMPANY role for CompanyProfile, INDIVIDUAL for IndividualProfile
 

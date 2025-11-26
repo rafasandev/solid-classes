@@ -44,10 +44,10 @@ public class UserService {
 
     public User adminSignUp(String email, String password, Set<Role> roles) {
         if (roles == null || roles.isEmpty()) {
-            throw new BusinessRuleException("Admin user must have ADMIN_MASTER role");
+            throw new BusinessRuleException("Admin user must have ADMIN role");
         }
 
-        boolean allAdmin = roles.stream().allMatch(r -> r.getName() == RoleName.ADMIN_MASTER);
+        boolean allAdmin = roles.stream().allMatch(r -> r.getName() == RoleName.ADMIN);
         if (!allAdmin) {
             throw new BusinessRuleException("Admin user cannot be created with other roles");
         }

@@ -27,7 +27,7 @@ public class AuthService {
 
         String accountType = "INDIVIDUAL";
         if (authenticatedUser.getRoles() != null) {
-            if (authenticatedUser.getRoles().stream().anyMatch(r -> r.getName() == RoleName.ADMIN_MASTER)) {
+            if (authenticatedUser.getRoles().stream().anyMatch(r -> r.getName() == RoleName.ADMIN)) {
                 accountType = "ADMIN";
             } else if (authenticatedUser.getRoles().stream().anyMatch(r -> r.getName() == RoleName.COMPANY)) {
                 accountType = "COMPANY";
@@ -40,7 +40,7 @@ public class AuthService {
         if (authenticatedUser.getRoles() != null) {
             for (var r : authenticatedUser.getRoles()) {
                 switch (r.getName()) {
-                    case ADMIN_MASTER:
+                    case ADMIN:
                         rolesClaim.add("ROLE_ADMIN");
                         break;
                     case COMPANY:
