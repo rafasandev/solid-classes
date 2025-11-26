@@ -243,3 +243,58 @@ Product product = Product.builder()
 - Database recreates schema on startup (ddl-auto: create) - change for production
 - Error messages in Portuguese (e.g., "não encontrado(a)")
 - CORS configured to allow all origins with credentials
+
+## Futuras Implementações (Roadmap)
+
+As próximas funcionalidades e melhorias sugeridas para evolução do projeto. Organização por escopo para priorização e planejamento.
+
+### Geral
+- Painel administrativo (relatórios, gestão de usuários, logs de auditoria)
+- Dashboards e métricas (vendas, visitas, produtos mais buscados)
+- API pública versionada (v1, v2) e documentação OpenAPI/Swagger completa
+- Observabilidade: métricas, tracing (OpenTelemetry), logs estruturados
+- Testes automatizados: unitários, integração, end-to-end (cypress/playwright)
+- Cache e performance (Redis), otimizações e testes de carga
+- Política de privacidade / conformidade (LGPD/GDPR)
+
+### Company (vendedores/lojas)
+- Painel do vendedor (dashboard de vendas, produtos, estoque)
+- Importação/Exportação de produtos (CSV/Excel)
+- Payouts / conciliação (integração com meios de pagamento para liquidação off-platform)
+- Relatórios por período, por produto e por vendedor
+- Estoque avançado: alertas, níveis mínimos, kits e pacotes
+- Integração POS (ponto de venda) local para registro de vendas manuais
+- Agendamento avançado: janelas de disponibilidade, bloqueios de calendário
+- Gerenciamento de devoluções e cancelamentos (workflow e registro)
+- Programa de fidelidade, cupons e promoções por vendedor
+- Políticas e controles de visibilidade de produto (scheduling, status)
+
+#### Produto / Variações
+- Importação de imagens e galeria multimídia (CDN)
+- Gerenciamento de SKUs e código de barras/QR
+- Mapeamento de variações como matriz (tamanhos/cores)
+- Bundles / combos de produtos
+
+#### Serviço
+- Calendário de disponibilidade por prestador
+- Regras de cancelamento e política de depósitos
+- Capacidade/recursos alocados por horário (ex.: salas, equipamentos)
+- Serviços virtuais (link de videochamada) e confirmação automática
+
+### Individual (clientes)
+- Busca avançada, filtros e ordenação (relevância, preço, distância)
+- Salvar carrinhos
+- Histórico de pedidos
+- Verificação obrigatória por documentação estudantil
+- Suporte a múltiplos métodos de pagamento (tokenização de cartão)
+- Rastreamento de status do pedido e timeline
+
+### Segurança & Governança
+- Logs de auditoria para ações críticas (criação/remoção de recursos)
+
+### Infra & Operações
+- Monitoramento e alertas (Prometheus + Grafana + n8n)
+
+### Integrações e Extensões
+- Aplicativo mobile nativo (iOS/Android)
+
