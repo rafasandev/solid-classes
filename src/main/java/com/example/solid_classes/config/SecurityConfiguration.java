@@ -4,12 +4,17 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -26,7 +31,9 @@ public class SecurityConfiguration {
         public SecurityFilterChain securityFilterChain(
                         HttpSecurity http,
                         AuthenticationProvider authenticationProvider,
-                        JwtAuthFilter jwtAuthFilter) throws Exception {
+                        JwtAuthFilter jwtAuthFilter,
+                        RoleHierarchy roleHierarchy) throws Exception {
+
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(crsf -> crsf.disable())
@@ -61,5 +68,30 @@ public class SecurityConfiguration {
                 source.registerCorsConfiguration("/**", configuration);
 
                 return source;
+        }
+
+        @Bean
+        public RoleHierarchy roleHierarchy() {
+                String hierarchy = """
+                                ROLE_ADMIN > ROLE_COMPANY
+                                ROLE_ADMIN > ROLE_INDIVIDUAL
+                                """;
+
+                return RoleHierarchyImpl.fromHierarchy(hierarchy);
+        }
+
+        @Bean
+        public MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+                DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+                handler.setRoleHierarchy(roleHierarchy);
+                return handler;
+        }
+
+        // ===== Web expression handler (para HttpSecurity expressions) =====
+        @Bean
+        public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+                DefaultWebSecurityExpressionHandler handler = new DefaultWebSecurityExpressionHandler();
+                handler.setRoleHierarchy(roleHierarchy);
+                return handler;
         }
 }
