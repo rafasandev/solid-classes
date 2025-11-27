@@ -13,9 +13,147 @@
 
 ## Architecture Overview
 
-This is a **Spring Boot 3.5.7 marketplace application** (uni_market) using **Java 25**, PostgreSQL, and JWT authentication. The codebase follows **Hexagonal Architecture** (Ports & Adapters) with SOLID principles.
+This is a **Spring Boot 3.5.7 marketplace application** (uni_market) using **Java 25**, with **hybrid database architecture (PostgreSQL + MongoDB)**, and JWT authentication. The codebase follows **Hexagonal Architecture** (Ports & Adapters) with SOLID principles.
+
+### Hybrid Database Architecture — PostgreSQL + MongoDB
+
+The application uses a **hybrid database architecture** combining PostgreSQL and MongoDB to achieve optimal performance, flexibility, and consistency for different types of operations.
+
+#### 🟦 PostgreSQL — Relational and Transactional Storage (ACID)
+
+PostgreSQL remains responsible for all **critical entities** that require referential integrity, security, or transactional consistency. This data represents the business core and must obey strict rules.
+
+**Entities maintained in PostgreSQL:**
+
+- **Users, profiles and authentication:**
+  - `users`, `roles`, `users_roles`, `individual_profiles`, `company_profiles`
+
+- **Orders and financial operations:**
+  - `orders`, `order_items`
+
+- **Shopping cart (for now):**
+  - `carts`, `cart_items`
+
+- **Categories and fixed referential structures:**
+  - `categories`, `variation_categories`, `global_variations`, `seller_variations`, `category_global_variations_mapping`
+
+**PostgreSQL is responsible for:**
+- Guaranteeing transaction consistency and atomicity
+- Controlling complex relationships
+- Maintaining sensitive information and business audit data
+- Recording purchases, critical inventory, and accounting data
+
+#### 🟩 MongoDB — Catalog, Variations, Services, and Logs
+
+MongoDB is used for all structures that need **flexibility, high read volume, low schema rigidity, and rapid attribute expansion**. It stores JSON documents that can evolve independently without needing to alter the global schema.
+
+**Entities migrated to MongoDB:**
+
+- **products** → main catalog document
+- **product_variations** → stored as arrays within the product document
+- **services** → independent documents
+- **logs and massive data:**
+  - access logs
+  - action logs
+  - API audit
+  - navigation tracking
+  - events and notifications
+  - metrics and usage history
+
+**These data are perfect for NoSQL because they:**
+- vary greatly between companies and categories
+- may contain dynamic and specific attributes
+- need to respond quickly in public queries (catalog)
+- generate high volume (logs and tracking)
+
+#### 🧩 How Products and Variations Work in MongoDB
+
+Instead of several normalized tables (like `products`, `product_variations`, `variation_categories`), each product is stored as a **single document** containing all variations within an array:
+
+```json
+{
+  "_id": "uuid",
+  "name": "Pizza Calabresa",
+  "description": "...",
+  "basePrice": 35.90,
+  "companyId": "uuid-company",
+  "categoryId": "uuid-category",
+  "stockQuantity": 10,
+  "available": true,
+  "variations": [
+    {
+      "categoryName": "Tamanho",
+      "value": "Grande",
+      "additionalPrice": 10,
+      "stockQuantity": 5,
+      "available": true
+    }
+  ],
+  "createdAt": "2025-01-01T10:00:00Z",
+  "updatedAt": "2025-01-15T14:30:00Z"
+}
+```
+
+**Benefits:**
+- Zero JOINs
+- Extremely fast queries
+- Flexible and expandable structure
+- Variations are added to the document with `$push`
+- Filters are done within the array (`variations.value`, `variations.categoryName`)
+
+#### 🧾 How Logs Are Handled in MongoDB
+
+Logs do NOT stay in PostgreSQL. MongoDB is used because it:
+- allows massive writes with high throughput
+- allows automatic expiration with TTL indexes
+- accepts large and different documents from each other
+
+**Example log document:**
+```json
+{
+  "userId": "uuid",
+  "action": "PRODUCT_VIEW",
+  "timestamp": "2025-01-20T15:45:30Z",
+  "metadata": {
+    "productId": "uuid-product",
+    "ip": "192.168.0.5"
+  }
+}
+```
+
+#### 🔄 General Application Integration
+
+- **PostgreSQL maintains business state**
+  → users, companies, orders, categories
+
+- **MongoDB maintains dynamic state and heavy read operations**
+  → products, variations, services, logs
+
+- **Product ID in PostgreSQL is mirrored in the MongoDB document**
+  → allows orders to reference only `product_id` (SQL)
+  → while the catalog is read directly from Mongo
+
+- **Application queries catalog from MongoDB**
+  → shopping interface, filters, product display
+
+- **Application writes orders to PostgreSQL**
+  → because transactions need to be ACID
+
+#### ⭐ Architecture Summary
+
+- **PostgreSQL** = critical core + business rules + security + transactions
+- **MongoDB** = catalog, variations, services, flexible data, logs, and heavy queries
+
+**Hybrid architecture guarantees:**
+- ✅ Speed in catalog
+- ✅ Consistency in orders
+- ✅ Flexibility for new product types
+- ✅ Horizontal scalability
+- ✅ Efficient log storage
 
 ### Core Architectural Patterns
+
+> 🔷 **Padrão oficial**: todo o projeto segue Arquitetura Hexagonal (Ports & Adapters). Quando criar ou alterar componentes, mantenha a separação Controller → UseCase → Service → Port → Adapter intacta para garantir baixo acoplamento e facilidade na troca de tecnologias (como PostgreSQL e MongoDB).
 
 **Domain Module Structure**: Each domain (product, cart, user, profile, etc.) in `src/main/java/com/example/solid_classes/core/` follows this consistent layout:
 ```
@@ -103,15 +241,25 @@ Este padrão serve como contrato de equipe. Revisões de PR devem validar confor
 
 ## Development Environment
 
-**Database**: PostgreSQL on port 5433 via Docker Compose
+**Databases (Hybrid Architecture)**: 
+
+**PostgreSQL** on port 5433 via Docker Compose
 - Start: `docker-compose up -d`
 - DB: solid_db, user: admin, pass: admin
 - PgAdmin available at http://localhost:5051
+- Used for: users, profiles, orders, cart, categories
+
+**MongoDB** on port 27017 via Docker Compose
+- Start: `docker-compose up -d` (same command, both containers start together)
+- DB: uni_market_catalog
+- Mongo Express available at http://localhost:8082
+- Used for: products, variations, services, logs
 
 **Build & Run**:
 - Maven wrapper: `./mvnw spring-boot:run`
 - App runs on port 8081
-- JPA DDL: `create` (recreates schema on startup)
+- JPA DDL: `create` (recreates PostgreSQL schema on startup)
+- MongoDB: schema-less, collections created automatically
 
 **Security**:
 - JWT auth configured in `SecurityConfiguration` with stateless sessions
@@ -240,7 +388,9 @@ Product product = Product.builder()
 
 - Enable JPA auditing via `@EnableJpaAuditing` on main application class
 - All IDs are UUIDs with `GenerationType.AUTO`
-- Database recreates schema on startup (ddl-auto: create) - change for production
+- **PostgreSQL**: Database recreates schema on startup (ddl-auto: create) - change for production
+- **MongoDB**: Schema-less, collections created on first document insert
+- **Hybrid Data Access**: Products/Services use MongoDB repositories, Orders/Users use JPA repositories
 - Error messages in Portuguese (e.g., "não encontrado(a)")
 - CORS configured to allow all origins with credentials
 

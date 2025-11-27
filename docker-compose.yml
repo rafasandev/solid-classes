@@ -3,9 +3,9 @@ services:
     container_name: 'solid-postgres'
     image: 'postgres:17'
     ports:
-      - '5433:5432'
+      - '5432:5432'
     environment:
-      POSTGRES_DB: 'solid_db'
+      POSTGRES_DB: 'solid-db'
       POSTGRES_USER: 'admin'
       POSTGRES_PASSWORD: 'admin'
     volumes:
@@ -24,8 +24,19 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
+  solid-mongo:
+    container_name: 'solid-mongo'
+    image: 'mongo'
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 'admin'
+      MONGO_INITDB_ROOT_PASSWORD: 'admin'
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   db_data:
   pgadmin_data:
-
+  mongodb_data:
 
