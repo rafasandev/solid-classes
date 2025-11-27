@@ -1,69 +1,64 @@
 package com.example.solid_classes.core.service_offering.model;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
-import com.example.solid_classes.common.base.AuditableEntity;
-import com.example.solid_classes.core.category.model.Category;
-import com.example.solid_classes.core.profile.model.company.CompanyProfile;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.example.solid_classes.common.base.AuditableMongoEntity;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Entity
-@Table(name = "services")
 @Getter
 @SuperBuilder
 @NoArgsConstructor
-public class ServiceOffering extends AuditableEntity {
+@Document(collection = "services")
+public class ServiceOffering extends AuditableMongoEntity {
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Indexed(unique = true)
     private String serviceName;
-    
-    @Column(length = 2000)
+
     private String description;
-    
-    @Column(nullable = false, precision = 10, scale = 2)
+
     private BigDecimal price;
-    
-    @Column(nullable = false)
-    private boolean available;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private Integer durationMinutes;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
-    private CompanyProfile company;
+    @Indexed
+    private UUID companyId;
 
-    public void setCategory(Category category) {
-        if (this.category != null)
-            this.category.removeService(this);
+    @Indexed
+    private UUID categoryId;
 
-        this.category = category;
+    private Boolean available;
 
-        if (category != null)
-            category.addService(this);
+    public void activate() {
+        this.available = true;
     }
 
-    public void setCompany(CompanyProfile company) {
-        if (this.company != null)
-            this.company.removeService(this);
-
-        this.company = company;
-
-        if (company != null)
-            company.addService(this);
+    public void deactivate() {
+        this.available = false;
     }
 
-    public void toggleAvailability() {
-        this.available = !this.available;
+    public boolean isAvailable() {
+        return Boolean.TRUE.equals(available);
+    }
+
+    public void updateDetails(String serviceName, String description, BigDecimal price, Integer durationMinutes) {
+        if (serviceName != null) {
+            this.serviceName = serviceName;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (durationMinutes != null) {
+            this.durationMinutes = durationMinutes;
+        }
     }
 }

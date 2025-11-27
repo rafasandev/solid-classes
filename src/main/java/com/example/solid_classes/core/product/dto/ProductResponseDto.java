@@ -10,6 +10,4 @@ public class ProductResponseDto {
     private UUID id;
     private String name;
     private String description;
-    private String categoryName;
-    private String companyName;
 }

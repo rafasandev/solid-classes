@@ -5,9 +5,9 @@ import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.role.model.Role;
 import com.example.solid_classes.core.user.mapper.UserMapper;
-import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.role.model.enums.RoleName;
 import com.example.solid_classes.core.user.model.User;
 import com.example.solid_classes.core.user.ports.UserPort;

@@ -1,131 +1,97 @@
 package com.example.solid_classes.core.product.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import com.example.solid_classes.common.base.AuditableEntity;
-import com.example.solid_classes.core.category.model.Category;
-import com.example.solid_classes.core.order_item.model.OrderItem;
-import com.example.solid_classes.core.product_variation.model.ProductVariation;
-import com.example.solid_classes.core.profile.model.company.CompanyProfile;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.example.solid_classes.common.base.AuditableMongoEntity;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Entity
-@Table(name = "products")
+@Document(collection = "products")
 @Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor
-public class Product extends AuditableEntity {
+public class Product extends AuditableMongoEntity {
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Indexed(unique = true)
     private String productName;
 
-    @Column(length = 2000)
     private String description;
-    
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal priceBase;
-    
-    @Column(nullable = false)
+
+    private BigDecimal basePrice;
+
     private boolean available;
-    
-    @Column(nullable = false)
+
     private int stockQuantity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @Indexed
+    private UUID companyId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
-    private CompanyProfile company;
+    @Indexed
+    private UUID categoryId;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<ProductVariation> productVariations;
+    private List<ProductVariationEmbedded> variations;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<OrderItem> orderItems;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ProductVariationEmbedded {
+        private UUID variationId; // ID único da variação
+        private String categoryName; // Ex: "Tamanho", "Cor"
+        private String value; // Ex: "Grande", "Vermelho"
+        private BigDecimal additionalPrice;
+        private int stockQuantity;
+        private boolean available;
+    }
 
-    public void setCategory(Category category) {
-        if (this.category != null) {
-            this.category.removeProduct(this);
+    public void addVariation(ProductVariationEmbedded variation) {
+        if (this.variations == null) {
+            this.variations = new ArrayList<>();
         }
+        this.variations.add(variation);
+    }
 
-        this.category = category;
-
-        if (category != null) {
-            category.addProduct(this);
+    public void removeVariation(UUID variationId) {
+        if (this.variations != null) {
+            this.variations.removeIf(v -> v.getVariationId().equals(variationId));
         }
     }
 
-    public void setCompany(CompanyProfile company) {
-        if (this.company != null) {
-            this.company.removeProduct(this);
-        }
-
-        this.company = company;
-
-        if (company != null) {
-            company.addProduct(this);
-        }
-    }
-
-    public void addProductVariation(ProductVariation productVariation) {
-        if (productVariation != null && this.productVariations != null) {
-            this.productVariations.add(productVariation);
-        }
-    }
-
-    public void removeProductVariation(ProductVariation productVariation) {
-        if (productVariation != null && this.productVariations != null) {
-            this.productVariations.remove(productVariation);
-        }
-    }
-
-    public void addOrderItem(OrderItem orderItem) {
-        if (orderItem != null && this.orderItems != null) {
-            this.orderItems.add(orderItem);
-        }
-    }
-
-    public void removeOrderItem(OrderItem orderItem) {
-        if(orderItem != null && this.orderItems != null) {
-            this.orderItems.remove(orderItem);
-        }
-    }
-
-    public void decreaseStock(int quantity) {
-        if (quantity > 0 && this.stockQuantity >= quantity) {
-            this.stockQuantity -= quantity;
-            if (this.stockQuantity == 0) {
-                this.available = false;
-            }
-        }
-    }
-
-    public void increaseStock(int quantity) {
-        if (quantity > 0) {
-            this.stockQuantity += quantity;
-            this.available = true;
-        }
+    public ProductVariationEmbedded findVariationById(UUID variationId) {
+        if (this.variations == null) return null;
+        return this.variations.stream()
+            .filter(v -> v.getVariationId().equals(variationId))
+            .findFirst()
+            .orElse(null);
     }
 
     public boolean hasStock(int quantity) {
         return this.available && this.stockQuantity >= quantity;
     }
 
-    public void toggleAvailability() {
-        this.available = !this.available;
+    public void decreaseStock(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantidade não pode ser negativa");
+        }
+        this.stockQuantity -= quantity;
+        if (this.stockQuantity < 0) {
+            this.stockQuantity = 0;
+        }
     }
 
+    public void increaseStock(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantidade não pode ser negativa");
+        }
+        this.stockQuantity += quantity;
+    }
 }

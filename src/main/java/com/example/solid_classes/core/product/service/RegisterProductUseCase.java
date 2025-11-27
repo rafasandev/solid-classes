@@ -3,7 +3,6 @@ package com.example.solid_classes.core.product.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.category.model.Category;
 import com.example.solid_classes.core.category.service.CategoryService;
 import com.example.solid_classes.core.product.dto.ProductForm;

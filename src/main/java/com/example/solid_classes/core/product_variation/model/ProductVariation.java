@@ -82,6 +82,6 @@ public class ProductVariation extends AuditableEntity {
     }
 
     public BigDecimal calculateTotalPrice(Product product) {
-        return product.getPriceBase().add(this.variationAdditionalPrice);
+        return product.getBasePrice().add(this.variationAdditionalPrice);
     }
 }

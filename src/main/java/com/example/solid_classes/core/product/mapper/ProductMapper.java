@@ -15,11 +15,11 @@ public class ProductMapper {
         Product product = Product.builder()
                 .productName(productForm.getProductName())
                 .description(productForm.getProductDescription())
-                .priceBase(productForm.getPriceBase())
+                .basePrice(productForm.getPriceBase())
                 .stockQuantity(productForm.getStockQuantity())
                 .available(productForm.getStockQuantity() > 0)
-                .category(category)
-                .company(company)
+                .categoryId(category.getId())
+                .companyId(company.getId())
                 .build();
         return product;
     }
@@ -29,8 +29,6 @@ public class ProductMapper {
                 .id(product.getId())
                 .name(product.getProductName())
                 .description(product.getDescription())
-                .categoryName(product.getCategory().getCategoryName())
-                .companyName(product.getCompany().getCompanyName())
                 .build();
         return responseDto;
     }

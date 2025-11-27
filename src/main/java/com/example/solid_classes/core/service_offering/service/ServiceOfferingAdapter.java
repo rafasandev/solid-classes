@@ -1,16 +1,39 @@
 package com.example.solid_classes.core.service_offering.service;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
-import com.example.solid_classes.common.base.NamedCrudAdapter;
+import com.example.solid_classes.common.base.NamedMongoAdapter;
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 import com.example.solid_classes.core.service_offering.ports.ServiceOfferingPort;
 import com.example.solid_classes.core.service_offering.repository.ServiceOfferingRepository;
 
 @Component
-public class ServiceOfferingAdapter extends NamedCrudAdapter<ServiceOffering, ServiceOfferingRepository> implements ServiceOfferingPort{
-    
-    public ServiceOfferingAdapter(ServiceOfferingRepository serviceOfferingRepository) {
-        super(serviceOfferingRepository, "Serviço");
+public class ServiceOfferingAdapter extends NamedMongoAdapter<ServiceOffering, ServiceOfferingRepository> implements ServiceOfferingPort {
+
+    public ServiceOfferingAdapter(ServiceOfferingRepository repository) {
+        super(repository, "Serviço");
+    }
+
+    public List<ServiceOffering> findByCompanyId(UUID companyId) {
+        return repository.findByCompanyId(companyId);
+    }
+
+    public List<ServiceOffering> findByCategoryId(UUID categoryId) {
+        return repository.findByCategoryId(categoryId);
+    }
+
+    public List<ServiceOffering> findAvailable() {
+        return repository.findByAvailableTrue();
+    }
+
+    public List<ServiceOffering> searchByName(String name) {
+        return repository.searchByName(name);
+    }
+
+    public boolean existsByServiceName(String serviceName) {
+        return repository.existsByServiceName(serviceName);
     }
 }

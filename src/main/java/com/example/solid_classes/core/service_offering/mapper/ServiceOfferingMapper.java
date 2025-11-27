@@ -17,8 +17,8 @@ public class ServiceOfferingMapper {
                 .description(serviceForm.getDescription())
                 .price(serviceForm.getPrice())
                 .available(true)
-                .category(category)
-                .company(company)
+                .categoryId(category.getId())
+                .companyId(company.getId())
                 .build();
         return service;
     }
@@ -27,8 +27,6 @@ public class ServiceOfferingMapper {
         ServiceOfferingResponseDto responseDto = ServiceOfferingResponseDto.builder()
                 .id(service.getId())
                 .serviceName(service.getServiceName())
-                .categoryName(service.getCategory().getCategoryName())
-                .companyName(service.getCompany().getCompanyName())
                 .build();
         return responseDto;
     }

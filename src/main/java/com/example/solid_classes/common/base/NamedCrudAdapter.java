@@ -19,7 +19,6 @@ public class NamedCrudAdapter<T, R extends JpaRepository<T, UUID>> implements Na
     protected final R repository;
     protected final String entityName;
 
-    // Métodos básicos de busca
     @Override
     public T getById(UUID id) {
         return repository.findById(id).orElseThrow(this::throwEntityNotFound);
@@ -40,7 +39,6 @@ public class NamedCrudAdapter<T, R extends JpaRepository<T, UUID>> implements Na
         return repository.findAll(pageable);
     }
 
-    // Métodos de persistência
     @Override
     public T save(T entity) {
         return repository.save(entity);
@@ -51,7 +49,6 @@ public class NamedCrudAdapter<T, R extends JpaRepository<T, UUID>> implements Na
         return repository.saveAll(entities);
     }
 
-    // Métodos de remoção
     @Override
     public void deleteById(UUID id) {
         repository.deleteById(id);
@@ -72,7 +69,6 @@ public class NamedCrudAdapter<T, R extends JpaRepository<T, UUID>> implements Na
         repository.deleteAll();
     }
 
-    // Métodos de verificação
     @Override
     public boolean existsById(UUID id) {
         return repository.existsById(id);
@@ -83,7 +79,6 @@ public class NamedCrudAdapter<T, R extends JpaRepository<T, UUID>> implements Na
         return repository.count();
     }
 
-    // Tratamento de exceções
     @Override
     public EntityNotFoundException throwEntityNotFound() {
         return new EntityNotFoundException(this.entityName + " não encontrado(a)");

@@ -56,14 +56,14 @@ public class OrderItem extends AuditableEntity {
     }
 
     public void setProduct(Product product) {
-        if (this.product != null) {
-            this.product.removeOrderItem(this);
-        }
+        // if (this.product != null) {
+        //     this.product.removeOrderItem(this);
+        // }
 
         this.product = product;
 
-        if (product != null) {
-            product.addOrderItem(this);
-        }
+        // if (product != null) {
+        //     product.addOrderItem(this);
+        // }
     }
 }

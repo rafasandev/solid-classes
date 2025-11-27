@@ -1,11 +1,29 @@
 package com.example.solid_classes.core.service_offering.repository;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 
-public interface ServiceOfferingRepository extends JpaRepository<ServiceOffering, UUID>{
-    
+/**
+ * Repository MongoDB para ServiceOffering.
+ * Fornece acesso ao catálogo de serviços com consultas otimizadas.
+ */
+@Repository
+public interface ServiceOfferingRepository extends MongoRepository<ServiceOffering, UUID> {
+
+    List<ServiceOffering> findByCompanyId(UUID companyId);
+
+    List<ServiceOffering> findByCategoryId(UUID categoryId);
+
+    List<ServiceOffering> findByAvailableTrue();
+
+    @Query("{'serviceName': {$regex: ?0, $options: 'i'}}")
+    List<ServiceOffering> searchByName(String name);
+
+    boolean existsByServiceName(String serviceName);
 }

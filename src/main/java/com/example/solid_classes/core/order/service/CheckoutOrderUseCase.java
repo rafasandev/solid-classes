@@ -22,6 +22,7 @@ import com.example.solid_classes.core.order_item.model.OrderItem;
 import com.example.solid_classes.core.order_item.service.OrderItemService;
 import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 import com.example.solid_classes.core.profile.model.individual.IndividualProfile;
+import com.example.solid_classes.core.profile.service.company.CompanyProfileService;
 import com.example.solid_classes.core.profile.service.individual.IndividualProfileService;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class CheckoutOrderUseCase {
 
     private final OrderService orderService;
     private final IndividualProfileService individualProfileService;
+    private final CompanyProfileService companyProfileService;
     private final CartService cartService;
     private final OrderItemService orderItemService;
 
@@ -70,8 +72,9 @@ public class CheckoutOrderUseCase {
     }
 
     private Map<CompanyProfile, List<CartItem>> groupItemsBySeller(List<CartItem> items) {
+        // CompanyProfile company = companyProfileService.getById(null)
         return items.stream()
-                .collect(Collectors.groupingBy(item -> item.getProduct().getCompany()));
+                .collect(Collectors.groupingBy(item -> companyProfileService.getById(item.getProduct().getCompanyId())));
     }
 
     private List<Order> processOrdersBySeller(Cart cart, Map<CompanyProfile, List<CartItem>> itemsBySeller) {

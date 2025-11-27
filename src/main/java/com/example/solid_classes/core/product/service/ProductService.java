@@ -11,18 +11,12 @@ import com.example.solid_classes.core.product.ports.ProductPort;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Service que encapsula o Port e adiciona validações leves.
- * Métodos CRUD delegam para o Port.
- * Validações podem ser reutilizadas por múltiplos UseCases.
- */
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductPort productPort;
 
-    // Métodos CRUD - delegam para o Port
     public Product getById(UUID id) {
         return productPort.getById(id);
     }
@@ -43,7 +37,6 @@ public class ProductService {
         return productPort.findByCategoryId(categoryId);
     }
 
-    // Validações leves
     public void validateStock(Product product, int requestedQuantity) {
         if (!product.hasStock(requestedQuantity)) {
             throw new BusinessRuleException(
