@@ -34,4 +34,11 @@ public class VariationCategoryGlobalService {
     public List<VariationCategoryGlobal> findAll() {
         return variationCategoryGlobalPort.findAll();
     }
+
+    public void verifyCategoryIsActive(UUID id) {
+        VariationCategoryGlobal category = getById(id);
+        if (!category.isActive()) {
+            throw new BusinessRuleException("Categoria de variação global inativa. Operação falhou");
+        }
+    }
 }

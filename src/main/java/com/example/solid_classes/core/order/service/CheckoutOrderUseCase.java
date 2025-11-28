@@ -14,12 +14,10 @@ import com.example.solid_classes.common.exception.UserRuleException;
 import com.example.solid_classes.core.cart.model.Cart;
 import com.example.solid_classes.core.cart.service.CartService;
 import com.example.solid_classes.core.cart_item.model.CartItem;
-import com.example.solid_classes.core.order.dto.OrderCheckoutForm;
 import com.example.solid_classes.core.order.dto.OrderResponseDto;
 import com.example.solid_classes.core.order.mapper.OrderMapper;
 import com.example.solid_classes.core.order.model.Order;
 import com.example.solid_classes.core.order.model.enums.OrderStatus;
-import com.example.solid_classes.core.order_item.mapper.OrderItemMapper;
 import com.example.solid_classes.core.order_item.model.OrderItem;
 import com.example.solid_classes.core.order_item.service.OrderItemService;
 import com.example.solid_classes.core.product.model.Product;
@@ -30,6 +28,8 @@ import com.example.solid_classes.core.profile.model.company.CompanyProfile;
 import com.example.solid_classes.core.profile.model.individual.IndividualProfile;
 import com.example.solid_classes.core.profile.service.company.CompanyProfileService;
 import com.example.solid_classes.core.profile.service.individual.IndividualProfileService;
+import com.example.solid_classes.core.user.model.User;
+import com.example.solid_classes.core.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,19 +44,21 @@ public class CheckoutOrderUseCase {
     private final OrderItemService orderItemService;
     private final ProductService productService;
     private final ProductVariationService productVariationService;
+    private final UserService userService;
 
     private final StockValidator stockValidator;
     private final PickupCodeGenerator pickupCodeGenerator;
     private final OrderCalculator orderCalculator;
 
     private final OrderMapper orderMapper;
-    private final OrderItemMapper orderItemMapper;
 
     @Transactional
-    public List<OrderResponseDto> checkout(OrderCheckoutForm orderCheckoutForm) {
-        Cart cart = cartService.getById(orderCheckoutForm.getCartId());
-        IndividualProfile customer = individualProfileService.getById(orderCheckoutForm.getCustomerId());
+    public List<OrderResponseDto> checkout() {
+        User loggedUser = userService.getLoggedInUser();
+        IndividualProfile customer = individualProfileService.getById(loggedUser.getId());
+        validateUserIsCustomer(loggedUser, customer);
 
+        Cart cart = cartService.getCartByProfileId(customer.getId());
         validateCartOwnership(cart, customer);
         validateCartNotEmpty(cart);
 
@@ -64,8 +66,15 @@ public class CheckoutOrderUseCase {
 
         Map<CompanyProfile, List<CartItem>> itemsBySeller = groupItemsBySeller(cart.getItems());
         List<Order> savedOrders = processOrdersBySeller(cart, itemsBySeller);
+
         clearCartItems(cart);
         return orderMapper.toResponseDtoList(savedOrders);
+    }
+
+    private void validateUserIsCustomer(User user, IndividualProfile customer) {
+        if (customer == null || !user.getId().equals(customer.getId())) {
+            throw new UserRuleException("Usuário logado não é o cliente do pedido");
+        }
     }
 
     private void validateCartOwnership(Cart cart, IndividualProfile customer) {
@@ -121,16 +130,9 @@ public class CheckoutOrderUseCase {
                     Product product = productService.getById(cartItem.getProductId());
                     ProductVariation variation = productVariationService.getById(cartItem.getProductVariationId());
                     product.decreaseVariationStock(variation, cartItem.getItemQuantity());
-                    return createOrderItemSnapshot(cartItem, order, variation);
+                    return orderItemService.createOrderItemSnapshot(cartItem, order, variation);
                 })
                 .toList();
-    }
-
-    private OrderItem createOrderItemSnapshot(CartItem cartItem, Order order, ProductVariation variation) {
-        
-        OrderItem orderItem = orderItemMapper.toOrderItemSnapshot(cartItem, order, variation);
-
-        return orderItemService.save(orderItem);
     }
 
     private void clearCartItems(Cart cart) {

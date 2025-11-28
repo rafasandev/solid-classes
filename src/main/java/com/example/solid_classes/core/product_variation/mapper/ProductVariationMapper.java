@@ -12,14 +12,14 @@ import com.example.solid_classes.core.variation_category.model.VariationCategory
 public class ProductVariationMapper {
     public ProductVariation toEntity(
             ProductVariationForm variationForm,
-            VariationCategoryEntity category,
-            Product product) {
+            VariationCategoryEntity category) {
         ProductVariation newVariation = ProductVariation.builder()
                 .variationValue(variationForm.getVariationValue())
                 .valueType(variationForm.getValueType())
                 .variationAdditionalPrice(variationForm.getVariationAdditionalPrice())
                 .variationCategoryId(category.getId())
-                .stockQuantity(0)
+                .productId(variationForm.getProductId())
+                .stockQuantity(variationForm.getStockQuantity())
                 .build();
         return newVariation;
     }
@@ -32,6 +32,7 @@ public class ProductVariationMapper {
                 .id(variation.getId())
                 .variationValue(variation.getVariationValue())
                 .variationPrice(variation.getVariationAdditionalPrice())
+                .variationAdditionalPrice(variation.getVariationAdditionalPrice())
                 .variationCategoryName(variationCategory.getName())
                 .variationProductName(product.getProductName())
                 .build();

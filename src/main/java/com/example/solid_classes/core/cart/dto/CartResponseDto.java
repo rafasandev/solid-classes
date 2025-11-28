@@ -5,6 +5,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class CartResponseDto {
-    private String profileName;
+    private String clientName;
 }
 

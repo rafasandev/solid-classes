@@ -1,16 +1,7 @@
 package com.example.solid_classes.core.cart.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.solid_classes.core.cart.dto.CartForm;
-import com.example.solid_classes.core.cart.dto.CartResponseDto;
-import com.example.solid_classes.core.cart.service.RegisterCartUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,13 +11,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CartController {
 
-    private final RegisterCartUseCase cartService;
+    // Criação do Cart deve ser feita automaticamente ao criar o perfil do usuário.
+
+    // private final RegisterCartUseCase cartService;
     
-    @PostMapping
-    @PreAuthorize("hasRole('INDIVIDUAL')")
-    public ResponseEntity<CartResponseDto> createCart(@RequestBody CartForm cartForm) {
-        CartResponseDto newCart = cartService.registerCart(cartForm);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newCart);
-    }
+    // @PostMapping
+    // @PreAuthorize("hasRole('INDIVIDUAL')")
+    // public ResponseEntity<CartResponseDto> createCart(@RequestBody CartForm cartForm) {
+    //     CartResponseDto newCart = cartService.registerCart(cartForm);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(newCart);
+    // }
     
 }

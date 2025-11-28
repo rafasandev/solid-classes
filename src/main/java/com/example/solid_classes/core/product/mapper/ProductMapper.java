@@ -28,6 +28,8 @@ public class ProductMapper {
                 .id(product.getId())
                 .name(product.getProductName())
                 .description(product.getDescription())
+                .basePrice(product.getBasePrice())
+                .stockQuantity(product.getStockQuantity())
                 .categoryName(category.getCategoryName())
                 .companyName(company.getCompanyName())
                 .build();

@@ -1,5 +1,6 @@
 package com.example.solid_classes.core.product.dto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -10,6 +11,8 @@ public class ProductResponseDto {
     private UUID id;
     private String name;
     private String description;
-    private String categoryName;
+    private BigDecimal basePrice;
+    private int stockQuantity;
     private String companyName;
+    private String categoryName;
 }

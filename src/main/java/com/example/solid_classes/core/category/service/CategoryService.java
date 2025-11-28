@@ -25,12 +25,9 @@ public class CategoryService {
 
     public Category save(Category category) {
         Optional<Category> existing = categoryPort.findByCategoryName(category.getCategoryName());
-        if (existing.isPresent()) {
-            if (category.getId() == null || !existing.get().getId().equals(category.getId())) {
-                throw new com.example.solid_classes.common.exception.BusinessRuleException(
-                    String.format("Categoria '%s' já existe", category.getCategoryName())
-                );
-            }
+        if (existing.isPresent() && (category.getId() == null || !existing.get().getId().equals(category.getId()))) {
+            throw new com.example.solid_classes.common.exception.BusinessRuleException(
+                    String.format("Categoria '%s' já existe", category.getCategoryName()));
         }
 
         return categoryPort.save(category);
@@ -47,12 +44,11 @@ public class CategoryService {
     public void validateBusinessSectorCompatibility(Category category, BusinessSector expectedSector) {
         if (category.getBusinessSector() != expectedSector) {
             throw new BusinessRuleException(
-                String.format("Categoria '%s' não é compatível com %s. Setor esperado: %s, Setor da categoria: %s",
-                    category.getCategoryName(),
-                    expectedSector == BusinessSector.COMMERCE ? "produtos" : "serviços",
-                    expectedSector,
-                    category.getBusinessSector())
-            );
+                    String.format("Categoria '%s' não é compatível com %s. Setor esperado: %s, Setor da categoria: %s",
+                            category.getCategoryName(),
+                            expectedSector == BusinessSector.COMMERCE ? "produtos" : "serviços",
+                            expectedSector,
+                            category.getBusinessSector()));
         }
     }
 }

@@ -32,6 +32,7 @@ public class RegisterProfileUseCase {
     private final RoleService roleService;
     private final UserService userService;
     private final ProfileMapper profileMapper;
+
     private final RegisterCartUseCase registerCartUseCase;
 
     @Transactional

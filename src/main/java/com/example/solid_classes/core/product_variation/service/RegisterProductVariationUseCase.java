@@ -3,7 +3,6 @@ package com.example.solid_classes.core.product_variation.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.solid_classes.common.exception.BusinessRuleException;
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.product.service.ProductService;
 import com.example.solid_classes.core.product_variation.dto.ProductVariationForm;
@@ -27,13 +26,13 @@ public class RegisterProductVariationUseCase {
     @Transactional
     public ProductVariationResponseDto registerProductVariation(ProductVariationForm variationForm) {
         VariationCategoryEntity category = variationCategoryGlobalService.getById(variationForm.getVariationCategoryId());
+        variationCategoryGlobalService.verifyCategoryIsActive(category.getId());
+
         Product product = productService.getById(variationForm.getProductId());
 
-        if (!category.isActive()) {
-            throw new BusinessRuleException("Categoria de variação inativa. Operação falhou");
-        }
-        ProductVariation newVariation = productVariationMapper.toEntity(variationForm, category, product);
+        ProductVariation newVariation = productVariationMapper.toEntity(variationForm, category);
         ProductVariation savedVariation = productVariationService.save(newVariation);
+        product.addVariation(savedVariation);
         
         return productVariationMapper.toResponseDto(savedVariation, category, product);
     }

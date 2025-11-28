@@ -30,7 +30,4 @@ public class ProductForm {
     
     @NotNull(message = "A categoria é obrigatória")
     private UUID categoryId;
-    
-    @NotNull(message = "A empresa é obrigatória")
-    private UUID companyId;
 }

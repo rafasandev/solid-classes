@@ -15,6 +15,8 @@ public class OrderMapper {
         OrderResponseDto orderResponseDto = OrderResponseDto.builder()
                 .orderStatus(order.getStatus())
                 .pickupCode(order.getPickUpcode())
+                .orderTotal(order.getOrderTotal())
+                .companyName(order.getCompany().getCompanyName())
                 .build();
 
         return orderResponseDto;
@@ -22,7 +24,7 @@ public class OrderMapper {
 
     public List<OrderResponseDto> toResponseDtoList(List<Order> orders) {
         return orders.stream()
-            .map(this::toResponseDto)
-            .collect(Collectors.toList());
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 }

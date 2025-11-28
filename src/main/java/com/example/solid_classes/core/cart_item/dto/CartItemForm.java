@@ -15,7 +15,4 @@ public class CartItemForm {
     
     @NotNull(message = "O produto é obrigatório")
     private UUID productVariationId;
-    
-    @NotNull(message = "O usuário é obrigatório")
-    private UUID userId;
 }
