@@ -228,223 +228,157 @@ Para garantir consistência em toda a base de código, siga este padrão rigoros
             - `CancelOrderUseCase`, `UpdateCartItemQuantityUseCase`, `CalculateCartTotalsUseCase`, etc.
     - Cada UseCase deve ter uma única responsabilidade: orquestrar o fluxo do caso de uso, delegar validações para `*Service` e persistência para `*Port`/Adapter, e retornar DTOs. Anote o método de entrada com `@Transactional` quando o fluxo modificar múltiplos agregados ou persistir mudanças em mais de uma dependência.
     - Testar UseCases com testes de integração que carreguem contexto mínimo do Spring (ou testes slice quando aplicável). Preferir testes que validem o fluxo completo do caso de uso.
+# Copilot Instructions - UniMarket Solid Classes
 
-- **Validações e Mensagens:**
-    - Todas as validações em DTOs devem usar anotações Jakarta com mensagens em Português.
-    - Erros de negócio lançam `BusinessRuleException` (ou exceções específicas) tratadas por `RestExceptionHandler`.
+## 1. Project Context & Business Overview
 
-- **Boas práticas de versão e commit:**
-    - Prefira PRs pequenos e focados; inclua uma breve descrição do impacto no modelo de dados.
-    - Use mensagens de commit com prefixos (`feat:`, `fix:`, `chore:`).
+**UniMarket** is a hyper-local e-commerce platform designed for a university campus. It connects students (buyers) with autonomous vendors and student-entrepreneurs (sellers).
 
-Este padrão serve como contrato de equipe. Revisões de PR devem validar conformidade com estes pontos antes de aceitar mudanças de estrutura ou convenções.
+**Key Constraints:**
+- **No Delivery System:** All transactions result in a physical pickup at the vendor's location on campus.
+- **Transactions:** Payment is processed off-platform (or via simple integration), but the system manages the *reservation* and *order lifecycle*.
+- **Strict Validation:** No "joke" reservations allowed; strict data types and validation required.
+- **Marketplace Model:** A single cart may contain items from multiple different sellers (Split Order logic required).
 
-## Development Environment
+---
 
-**Databases (Hybrid Architecture)**: 
+## 2. Technical Stack & Architecture
 
-**PostgreSQL** on port 5433 via Docker Compose
-- Start: `docker-compose up -d`
-- DB: solid_db, user: admin, pass: admin
-- PgAdmin available at http://localhost:5051
-- Used for: users, profiles, orders, cart, categories
+- **Language:** Java 25
+- **Framework:** Spring Boot 3.5.7
+- **Architecture:** Hexagonal Architecture (Ports & Adapters)
+- **Database:** Hybrid Architecture (PostgreSQL + MongoDB)
+- **Authentication:** JWT (Stateless)
+- **Documentation:** SpringDoc OpenAPI v2 (Swagger)
 
-**MongoDB** on port 27017 via Docker Compose
-- Start: `docker-compose up -d` (same command, both containers start together)
-- DB: uni_market_catalog
-- Mongo Express available at http://localhost:8082
-- Used for: products, variations, services, logs
+---
 
-**Build & Run**:
-- Maven wrapper: `./mvnw spring-boot:run`
-- App runs on port 8081
-- JPA DDL: `create` (recreates PostgreSQL schema on startup)
-- MongoDB: schema-less, collections created automatically
+## 3. Hybrid Database Strategy (Strict Separation)
 
-**Security**:
-- JWT auth configured in `SecurityConfiguration` with stateless sessions
-- Public endpoints: `/auth/**`, `/profile/**`
-- JWT secret/expiration in `application.yaml` under `security.jwt.*`
-- Uses `JwtAuthFilter` before `UsernamePasswordAuthenticationFilter`
+The application uses two databases to optimize for transactional integrity (SQL) and catalog flexibility (NoSQL). **You must respect this separation.**
 
-## Code Conventions
+### 🟦 PostgreSQL (Transactional Core)
+**Responsibility:** Data integrity, relations, financial history, user access.
+**Persistence:** `JpaRepository`.
+**Entities (JPA):**
+- **Auth:** `User`, `Role`
+- **Profiles:** `IndividualProfile`, `CompanyProfile`, `ProfileEntity` (@MappedSuperclass)
+- **Financial:** `Order`, `OrderItem` (Snapshots)
+- **State:** `Cart`, `CartItem`
+- **Taxonomy:** `Category`, `VariationCategoryEntity` (Global/Seller inheritance)
 
-**Lombok**: Use `@Getter`, `@RequiredArgsConstructor`, `@SuperBuilder`, `@NoArgsConstructor` on entities/DTOs. Avoid `@Data` and `@Setter` (prefer immutability).
+### 🟩 MongoDB (Catalog & Discovery)
+**Responsibility:** High-read volume, flexible schema, product catalog, logs.
+**Persistence:** `MongoRepository`.
+**Documents:**
+- **Catalog:** `Product` (Document), `ProductVariation` (Embedded Array inside Product)
+- **Services:** `ServiceOffering`
+- **Audit:** `Logs`, `AccessHistory`
 
-**Entity Construction**: Use Lombok's `@SuperBuilder` pattern for entities:
-```java
-Product product = Product.builder()
-    .productName(form.getProductName())
-    .category(category)
-    .build();
-```
+> 🚨 **CRITICAL ARCHITECTURE RULE:**
+> 1. Do **NOT** create JPA entities for `Product` or `ProductVariation`.
+> 2. PostgreSQL entities (like `CartItem` or `OrderItem`) reference Products only by their UUID string.
+> 3. Complex catalog queries (filters, text search) happen in MongoDB.
+> 4. Transactional operations (Checkout, Stock Reservation) coordinate both DBs via UseCases.
 
-**Collection Initialization**: Do NOT initialize collections with `new ArrayList<>()` in entity declarations. Let Hibernate manage collection initialization to avoid masking PersistentBag behavior. Always check for null before adding/removing items in helper methods.
+---
 
-**Mappers**: Create `@Component` mapper classes (not MapStruct) with methods like `toEntity(Form, dependencies...)` and `toResponseDto(Entity)`.
+## 4. Layer Structure (Hexagonal)
 
-**Exception Handling**: 
-- `RestExceptionHandler` provides global error handling with `@ControllerAdvice`
-- Use `EntityNotFoundException` from ports for missing resources
-- Validation errors return field-level messages
+Follow this directory structure for every new domain (`src/main/java/com/example/solid_classes/core/<domain>/`):
 
-**Lazy Loading**: All entity relationships use `fetch = FetchType.LAZY`. Always load required associations explicitly in service layer.
+1.  **`controller/`** (Adapter In):
+    - REST Endpoints.
+    - Uses `@Valid` on DTOs.
+    - Returns `ResponseEntity<ResponseDto>`.
+    - **Rule:** Never allows Entities to leak to the API surface.
 
-**Validation**: 
-- Use Jakarta validation annotations (`@NotNull`, `@NotBlank`, `@NotEmpty`, `@Min`, `@DecimalMin`, `@Size`, etc.) on all Form DTOs
-- All controllers must use `@Valid` annotation on `@RequestBody` parameters
-- Validation messages must be in Portuguese and user-friendly
-- Validated automatically via `@Valid @RequestBody` and handled by `RestExceptionHandler`
-- Required fields: Use `@NotNull` for objects/numbers, `@NotBlank` for strings, `@NotEmpty` for strings that shouldn't be whitespace-only
+2.  **`dto/`** (Data Transfer Objects):
+    - `[Domain]Form`: Input data with Jakarta Validation (`@NotNull`, `@DecimalMin`).
+    - `[Domain]ResponseDto`: Output data.
 
-**Enum Organization**:
-- All domain-specific enums must be placed in `model/enums/` directory within each domain
-- Examples: `ReservationStatus` in `cart_item/model/enums/`, `RoleName` in `role/model/enums/`
-- Use descriptive enum names and include comments for each value when needed
+3.  **`mapper/`** (Pure Functions):
+    - Converts `Form` → `Entity` and `Entity` → `ResponseDto`.
+    - **Rule:** Must be `@Component`.
+    - **Rule:** **SIDE-EFFECT FREE**. Never inject Services/Repositories into Mappers. Pass all dependencies (e.g., `CategoryName`) as method arguments.
 
-**Monetary Values with BigDecimal**:
-- ALL monetary fields MUST use `BigDecimal` type, never `double` or `Double`
-- Apply `@Column(nullable = false, precision = 10, scale = 2)` for monetary columns
-- Use `BigDecimal` in entities (Product.priceBase, ServiceOffering.price, ProductVariation.variationAdditionalPrice, CartItem.unitPriceSnapshot, Order.orderTotal, OrderItem.productPrice, OrderItem.subtotal)
-- Use `BigDecimal` in Form DTOs with `@DecimalMin` validation
-- Use `BigDecimal` in Response DTOs for consistency
-- ALL arithmetic operations MUST use BigDecimal methods: `.add()`, `.subtract()`, `.multiply()`, `.divide()`
-- Use `BigDecimal.ZERO` instead of `0.0` for zero values
-- For stream operations: use `.map()` and `.reduce(BigDecimal.ZERO, BigDecimal::add)` instead of `.mapToDouble().sum()`
-- Example calculation: `product.getPriceBase().add(variation.getVariationAdditionalPrice())`
-- Example stream sum: `items.stream().map(CartItem::calculateSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add)`
+4.  **`model/`** (Domain Entities):
+    - JPA Entities or Mongo Documents.
+    - Uses `@SuperBuilder`, `@Getter`.
+    - **Rule:** Extends `AuditableEntity`.
 
-**Price Snapshot Pattern**: CartItem stores `unitPriceSnapshot` (BigDecimal) from Product at insertion time to maintain financial consistency even if product prices change later.
+5.  **`ports/`** (Output Port):
+    - Interfaces extending `NamedCrudPort<T>`.
 
-**Entity Constraints**:
-- Always add `nullable = false` for required fields
-- Add `unique = true` for business keys (productName, serviceName, etc.)
-- Specify `length` for String columns to avoid database defaults
-- Use `@Index` for frequently queried columns
-- Use `@UniqueConstraint` to prevent business logic duplicates (e.g., same product in same cart)
+6.  **`repository/`** (DB Access):
+    - Interfaces extending `JpaRepository` or `MongoRepository`.
 
-**Cascade Operations**:
-- Use `CascadeType.PERSIST` and `CascadeType.MERGE` for parent-child relationships
-- Use `orphanRemoval = true` for strict ownership (e.g., CartItem belongs to Cart)
-- Avoid `CascadeType.ALL` unless truly necessary
+7.  **`service/`** (Domain Logic):
+    - `[Domain]Adapter`: Implements Port, uses Repository.
+    - `[Domain]Service`: Lightweight validation, pure domain logic.
+    - `Register[Domain]UseCase`: **@Transactional** orchestrator. Handles the flow between multiple services.
 
-**Stock Management**:
-- Products and ProductVariations have `stockQuantity` and `available` fields
-- Always check stock before creating CartItems
-- Use dedicated methods: `decreaseStock()`, `increaseStock()`, `hasStock()`
-- Stock decreases on reservation, increases on cancellation
+---
 
-**Reservation Status Pattern**:
-- CartItem has `ReservationStatus` enum: PENDING, RESERVED, COMPLETED, CANCELLED
-- Items start as PENDING when added to cart
-- Only PENDING items can be modified
-- Use `reserve()`, `complete()`, `cancel()` methods to transition states
-- Check `canModifyQuantity()` before allowing quantity changes
+## 5. Coding Standards & Corrections (High Priority)
 
-## Common Tasks
+### 🔹 Mappers: Pure & Null-Safe
+**Correction:** Do not inject Services into Mappers to fetch data. Fetch data in the UseCase and pass it to the mapper.
+* *Bad:* `mapper.toDto(product)` (where mapper calls DB to get category name).
+* *Good:* `mapper.toDto(product, category.getName(), company.getName())`.
 
-**Adding a New Domain Entity**:
-1. Create entity extending `AuditableEntity` in `core/domain/model/`
-2. Add appropriate constraints (`@Column(nullable = false)`, `unique = true`, `length`)
-3. Add indexes for foreign keys and frequently queried columns
-4. Initialize collections as `null` (let Hibernate manage them)
-5. Add null checks in all collection manipulation methods
-6. Create `DomainPort` interface extending `NamedCrudPort<Domain>`
-7. Create `JpaRepository<Domain, UUID>` in `repository/`
-8. Create `DomainAdapter` extending `NamedCrudAdapter<Domain, DomainRepository>` implementing `DomainPort`
-9. Create `DomainService` with business logic methods using the port
-10. Create DTOs (`DomainForm`, `DomainResponseDto`) in `dto/`
-11. Create `DomainMapper` @Component for conversions
-12. Create `Register[Domain]UseCase` for complex operations with `@Transactional`
-13. Create `DomainController` with REST endpoints
+**Correction:** Always check for nulls in lazy relationships before accessing properties.
+* *Pattern:* `String name = (entity.getRelation() != null) ? entity.getRelation().getName() : null;`
 
-**Working with Profiles**: When creating/updating profiles, remember:
-- Profiles use User's UUID as their ID via `@MapsId`
-- CompanyProfile entities need cnpj (unique), companyName
-- IndividualProfile entities need cpf (unique), name
-- Automatically assign appropriate Role (COMPANY or INDIVIDUAL) to User during profile creation
-- Cart is automatically initialized for IndividualProfile in `RegisterProfileUseCase`
-- See `RegisterProfileUseCase` for the pattern
+### 🔹 Pagination
+**Correction:** Never return `List<T>` for search/listing endpoints.
+* *Pattern:* Use `Pageable` in Controller and Repository. Return `Page<DTO>`.
 
-**Transaction Boundaries**: Apply `@Transactional` on use case methods, not on simple CRUD operations in adapters/services.
+### 🔹 Exception Handling
+**Correction:** Avoid `throws` in method signatures. Use unchecked exceptions.
+* *Pattern:* Throw `BusinessRuleException("Message in Portuguese")` for logic failures.
+* *Pattern:* Throw `EntityNotFoundException` (via `NamedCrudAdapter`) when resources are missing.
 
-**Role Management**: Users must have roles assigned during signup:
- - Use `RoleService.getByRoleName()` to fetch roles (COMPANY, INDIVIDUAL, ADMIN)
-- Pass roles to `UserService.signUp(email, password, roles)`
-- COMPANY role for CompanyProfile, INDIVIDUAL for IndividualProfile
+### 🔹 Monetary Values
+**Correction:** ALWAYS use `BigDecimal`.
+* *Annotation:* `@Column(nullable = false, precision = 10, scale = 2)`
+* *Math:* Use `.add()`, `.multiply()`. Never use operators `+` `*`.
 
-## Key Files
+---
 
-- `common/base/AuditableEntity.java` - Base entity with UUID & audit fields
-- `common/base/NamedCrudAdapter.java` - Generic adapter implementation
-- `common/ports/NamedCrudPort.java` - Port interface contract
-- `config/SecurityConfiguration.java` - Security & CORS setup
-- `config/ApplicationConfiguration.java` - Authentication beans
-- `config/RestExceptionHandler.java` - Global exception handling
+## 6. Critical Business Logic Patterns
+
+### 🛒 Split Order (Checkout)
+The system is a Marketplace. One `Cart` can contain items from multiple Sellers.
+**On Checkout:**
+1.  Group `CartItems` by `CompanyProfile`.
+2.  Create one `Order` entity per Company.
+3.  Generate a unique **Pickup Code** (5 chars, e.g., `#A3K9`) per Order.
+4.  Save `OrderItem` snapshots (see below).
+5.  Clear the Cart.
+
+### 📸 Order Snapshots
+**Rule:** `Order` and `OrderItem` must represent the **past**.
+**Implementation:**
+- `OrderItem` must store a copy of: `productName`, `unitPrice` (at time of purchase), and `quantity`.
+- Do **NOT** rely on the `Product` link to get the price, as the vendor may change it later.
+
+### 📦 Inventory Management
+- **Source of Truth:** MongoDB (`Product.stockQuantity`).
+- **Reservation:** When an `Order` is created, decrement stock in MongoDB.
+- **Validation:** `RegisterCartItemUseCase` must check Mongo stock availability before adding to Postgres Cart.
+
+---
+
+## 7. AI Agent Checklist
+
+Before generating code, verify:
+
+1.  [ ] **Database:** Am I trying to create a JPA relationship to a Product? -> **STOP**. Use UUID reference.
+2.  [ ] **Mapper:** Am I `@Autowired`-ing a Service in a Mapper? -> **STOP**. Pass data as args.
+3.  [ ] **Search:** Is this a list endpoint? -> **USE PAGEABLE**.
+4.  [ ] **Language:** Are validation messages/Exceptions in Portuguese (PT-BR)? -> **YES**.
+5.  [ ] **Safety:** Did I initialize Lists as `null` in the Entity to let Hibernate handle it? -> **YES**.
+6.  [ ] **Logic:** Did I use `BigDecimal` for money? -> **YES**.
 - `auth/service/JwtService.java` - JWT token generation/validation
-- `SolidClassesApplication.java` - Entry point with `@EnableJpaAuditing`
-
-## Notes
-
-- Enable JPA auditing via `@EnableJpaAuditing` on main application class
-- All IDs are UUIDs with `GenerationType.AUTO`
-- **PostgreSQL**: Database recreates schema on startup (ddl-auto: create) - change for production
-- **MongoDB**: Schema-less, collections created on first document insert
-- **Hybrid Data Access**: Products/Services use MongoDB repositories, Orders/Users use JPA repositories
-- Error messages in Portuguese (e.g., "não encontrado(a)")
-- CORS configured to allow all origins with credentials
-
-## Futuras Implementações (Roadmap)
-
-As próximas funcionalidades e melhorias sugeridas para evolução do projeto. Organização por escopo para priorização e planejamento.
-
-### Geral
-- Painel administrativo (relatórios, gestão de usuários, logs de auditoria)
-- Dashboards e métricas (vendas, visitas, produtos mais buscados)
-- API pública versionada (v1, v2) e documentação OpenAPI/Swagger completa
-- Observabilidade: métricas, tracing (OpenTelemetry), logs estruturados
-- Testes automatizados: unitários, integração, end-to-end (cypress/playwright)
-- Cache e performance (Redis), otimizações e testes de carga
-- Política de privacidade / conformidade (LGPD/GDPR)
-
-### Company (vendedores/lojas)
-- Painel do vendedor (dashboard de vendas, produtos, estoque)
-- Importação/Exportação de produtos (CSV/Excel)
-- Payouts / conciliação (integração com meios de pagamento para liquidação off-platform)
-- Relatórios por período, por produto e por vendedor
-- Estoque avançado: alertas, níveis mínimos, kits e pacotes
-- Integração POS (ponto de venda) local para registro de vendas manuais
-- Agendamento avançado: janelas de disponibilidade, bloqueios de calendário
-- Gerenciamento de devoluções e cancelamentos (workflow e registro)
-- Programa de fidelidade, cupons e promoções por vendedor
-- Políticas e controles de visibilidade de produto (scheduling, status)
-
-#### Produto / Variações
-- Importação de imagens e galeria multimídia (CDN)
-- Gerenciamento de SKUs e código de barras/QR
-- Mapeamento de variações como matriz (tamanhos/cores)
-- Bundles / combos de produtos
-
-#### Serviço
-- Calendário de disponibilidade por prestador
-- Regras de cancelamento e política de depósitos
-- Capacidade/recursos alocados por horário (ex.: salas, equipamentos)
-- Serviços virtuais (link de videochamada) e confirmação automática
-
-### Individual (clientes)
-- Busca avançada, filtros e ordenação (relevância, preço, distância)
-- Salvar carrinhos
-- Histórico de pedidos
-- Verificação obrigatória por documentação estudantil
-- Suporte a múltiplos métodos de pagamento (tokenização de cartão)
-- Rastreamento de status do pedido e timeline
-
-### Segurança & Governança
-- Logs de auditoria para ações críticas (criação/remoção de recursos)
-
-### Infra & Operações
-- Monitoramento e alertas (Prometheus + Grafana + n8n)
-
-### Integrações e Extensões
-- Aplicativo mobile nativo (iOS/Android)
 
