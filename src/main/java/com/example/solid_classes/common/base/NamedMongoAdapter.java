@@ -49,6 +49,13 @@ public class NamedMongoAdapter<T, R extends MongoRepository<T, UUID>> implements
 
     @Override
     public List<T> saveAll(Iterable<T> entities) {
+        if (entities != null) {
+            for (T e : entities) {
+                if (e instanceof AuditableMongoEntity) {
+                    ((AuditableMongoEntity) e).generateId();
+                }
+            }
+        }
         return repository.saveAll(entities);
     }
 
