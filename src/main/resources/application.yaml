@@ -18,8 +18,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/solid-db
-    username: admin
-    password: admin
+    username: it4iot
+    password: it4iot12345678**
     driver-class-name: org.postgresql.Driver
 
   data:

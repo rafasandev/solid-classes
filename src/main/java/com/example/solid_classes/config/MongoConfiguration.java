@@ -11,17 +11,17 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-/**
- * MongoDB configuration.
- *
- * Notes:
- * - Remove manual repository package restrictions so Spring Boot auto-configuration
- *   can discover repositories across the project.
- * - Register custom converters to persist BigDecimal as Decimal128 in MongoDB.
- */
 @Configuration
 @EnableMongoAuditing
+@EnableMongoRepositories(
+    basePackages = "com.example.solid_classes.core",
+    includeFilters = @org.springframework.context.annotation.ComponentScan.Filter(
+        type = org.springframework.context.annotation.FilterType.REGEX,
+        pattern = ".*repository\\.mongo.*"
+    )
+)
 public class MongoConfiguration {
 
     @Bean
