@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.variation_category.model.variation_seller.VariationCategorySeller;
 import com.example.solid_classes.core.variation_category.ports.VariationCategorySellerPort;
-import com.example.solid_classes.core.variation_category.repository.VariationCategorySellerRepository;
+import com.example.solid_classes.core.variation_category.repository.jpa.VariationCategorySellerRepository;
 
 @Component
 public class VariationCategorySellerAdapter

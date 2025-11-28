@@ -17,7 +17,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/solid-db
+    url: jdbc:postgresql://localhost:5432/solid_db
     username: it4iot
     password: it4iot12345678**
     driver-class-name: org.postgresql.Driver

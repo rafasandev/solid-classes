@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.solid_classes.common.base.NamedMongoAdapter;
 import com.example.solid_classes.core.product.model.Product;
 import com.example.solid_classes.core.product.ports.ProductPort;
-import com.example.solid_classes.core.product.repository.ProductRepository;
+import com.example.solid_classes.core.product.repository.mongo.ProductRepository;
 
 @Component
 public class ProductAdapter extends NamedMongoAdapter<Product, ProductRepository> implements ProductPort {
@@ -23,10 +23,6 @@ public class ProductAdapter extends NamedMongoAdapter<Product, ProductRepository
 
     public List<Product> findByCategoryId(UUID categoryId) {
         return repository.findByCategoryId(categoryId);
-    }
-
-    public List<Product> findAvailable() {
-        return repository.findByAvailableTrue();
     }
 
     public List<Product> searchByName(String name) {

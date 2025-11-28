@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.category.repository;
+package com.example.solid_classes.core.category.repository.jpa;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,5 +1,6 @@
 package com.example.solid_classes.auth.service;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,7 +37,7 @@ public class AuthService {
 
         extraClaims.put("accountType", accountType);
 
-        java.util.List<String> rolesClaim = new java.util.ArrayList<>();
+        List<String> rolesClaim = new java.util.ArrayList<>();
         if (authenticatedUser.getRoles() != null) {
             for (var r : authenticatedUser.getRoles()) {
                 switch (r.getName()) {

@@ -5,7 +5,6 @@ import java.util.List;
 import com.example.solid_classes.core.order.model.Order;
 import com.example.solid_classes.core.profile.model.ProfileEntity;
 import com.example.solid_classes.core.profile.model.company.enums.BusinessSector;
-import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 import com.example.solid_classes.core.variation_category.model.variation_seller.VariationCategorySeller;
 
 import jakarta.persistence.CascadeType;
@@ -38,23 +37,10 @@ public class CompanyProfile extends ProfileEntity {
     private BusinessSector businessSector;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ServiceOffering> services;
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<VariationCategorySeller> variationCategories;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
-
-    public void addService(ServiceOffering service) {
-        if (service != null && this.services != null && !this.services.contains(service))
-            this.services.add(service);
-    }
-
-    public void removeService(ServiceOffering service) {
-        if (service != null && this.services != null && this.services.contains(service))
-            this.services.remove(service);
-    }
 
     public void addVariationCategory(VariationCategorySeller variationCategory) {
         if (variationCategory != null && this.variationCategories != null

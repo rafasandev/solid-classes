@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.role.repository;
+package com.example.solid_classes.core.role.repository.jpa;
 
 import java.util.Optional;
 import java.util.UUID;

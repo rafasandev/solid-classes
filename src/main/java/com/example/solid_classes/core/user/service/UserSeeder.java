@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.solid_classes.core.role.model.Role;
 import com.example.solid_classes.core.role.model.enums.RoleName;
 import com.example.solid_classes.core.role.service.RoleService;
-import com.example.solid_classes.core.user.repository.UserRepository;
+import com.example.solid_classes.core.user.repository.jpa.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 

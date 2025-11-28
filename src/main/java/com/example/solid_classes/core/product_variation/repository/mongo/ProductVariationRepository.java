@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.product_variation.repository;
+package com.example.solid_classes.core.product_variation.repository.mongo;
 
 import java.util.List;
 import java.util.UUID;

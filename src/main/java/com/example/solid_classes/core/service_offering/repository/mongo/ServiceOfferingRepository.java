@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.service_offering.repository;
+package com.example.solid_classes.core.service_offering.repository.mongo;
 
 import java.util.List;
 import java.util.UUID;

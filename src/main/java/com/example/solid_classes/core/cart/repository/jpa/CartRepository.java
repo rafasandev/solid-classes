@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.cart.repository;
+package com.example.solid_classes.core.cart.repository.jpa;
 
 import java.util.Optional;
 import java.util.UUID;

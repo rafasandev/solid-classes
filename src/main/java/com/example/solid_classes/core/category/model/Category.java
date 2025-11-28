@@ -4,15 +4,11 @@ import java.util.List;
 
 import com.example.solid_classes.common.base.AuditableEntity;
 import com.example.solid_classes.core.profile.model.company.enums.BusinessSector;
-import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 import com.example.solid_classes.core.variation_category.model.variation_global.VariationCategoryGlobal;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,19 +27,7 @@ public class Category extends AuditableEntity {
     @Column(nullable = false)
     private BusinessSector businessSector;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ServiceOffering> services;
-
     @ManyToMany(mappedBy = "categories")
     private List<VariationCategoryGlobal> variationCategories;
 
-    public void addService(ServiceOffering service) {
-        if (service != null && this.services != null && !this.services.contains(service))
-            this.services.add(service);
-    }
-
-    public void removeService(ServiceOffering service) {
-        if (service != null && this.services != null && this.services.contains(service))
-            this.services.remove(service);
-    }
 }

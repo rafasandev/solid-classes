@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.user.repository;
+package com.example.solid_classes.core.user.repository.jpa;
 
 import java.util.Optional;
 import java.util.UUID;

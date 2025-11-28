@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.user.model.User;
 import com.example.solid_classes.core.user.ports.UserPort;
-import com.example.solid_classes.core.user.repository.UserRepository;
+import com.example.solid_classes.core.user.repository.jpa.UserRepository;
 
 @Component
 public class UserAdapter extends NamedCrudAdapter<User, UserRepository> implements UserPort {

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.solid_classes.common.base.NamedMongoAdapter;
 import com.example.solid_classes.core.service_offering.model.ServiceOffering;
 import com.example.solid_classes.core.service_offering.ports.ServiceOfferingPort;
-import com.example.solid_classes.core.service_offering.repository.ServiceOfferingRepository;
+import com.example.solid_classes.core.service_offering.repository.mongo.ServiceOfferingRepository;
 
 @Component
 public class ServiceOfferingAdapter extends NamedMongoAdapter<ServiceOffering, ServiceOfferingRepository> implements ServiceOfferingPort {

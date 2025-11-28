@@ -12,8 +12,6 @@ public interface ProductPort extends NamedCrudPort<Product> {
     
     List<Product> findByCategoryId(UUID categoryId);
     
-    List<Product> findAvailable();
-    
     List<Product> searchByName(String name);
     
     List<Product> findAvailableWithStock();

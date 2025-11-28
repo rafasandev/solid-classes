@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import com.example.solid_classes.common.base.NamedCrudAdapter;
 import com.example.solid_classes.core.cart.model.Cart;
 import com.example.solid_classes.core.cart.ports.CartPort;
-import com.example.solid_classes.core.cart.repository.CartRepository;
+import com.example.solid_classes.core.cart.repository.jpa.CartRepository;
 
 @Component
 public class CartAdapter extends NamedCrudAdapter<Cart, CartRepository> implements CartPort {

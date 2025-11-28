@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.variation_category.repository;
+package com.example.solid_classes.core.variation_category.repository.jpa;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.order_item.repository;
+package com.example.solid_classes.core.order_item.repository.jpa;
 
 import java.util.UUID;
 

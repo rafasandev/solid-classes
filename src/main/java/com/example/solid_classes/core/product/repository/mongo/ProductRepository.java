@@ -1,4 +1,4 @@
-package com.example.solid_classes.core.product.repository;
+package com.example.solid_classes.core.product.repository.mongo;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,8 +15,6 @@ public interface ProductRepository extends MongoRepository<Product, UUID> {
     List<Product> findByCompanyId(UUID companyId);
 
     List<Product> findByCategoryId(UUID categoryId);
-
-    List<Product> findByAvailableTrue();
 
     @Query("{'productName': {$regex: ?0, $options: 'i'}}")
     List<Product> searchByName(String name);
