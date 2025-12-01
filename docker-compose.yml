@@ -1,31 +1,31 @@
 services:
-  solid-postgres:
-    container_name: 'solid-postgres'
+  market_postgres:
+    container_name: 'market_postgres'
     image: 'postgres:17'
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_DB: 'solid-db'
+      POSTGRES_DB: 'market_api'
       POSTGRES_USER: 'admin'
       POSTGRES_PASSWORD: 'admin'
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  solid-pgadmin:
-    container_name: 'solid-pgadmin'
+  market_pgadmin:
+    container_name: 'market_pgadmin'
     image: 'dpage/pgadmin4:9.4'
     ports:
       - '5051:80'
     environment:
       PGADMIN_DEFAULT_EMAIL: 'rs7951006@gmail.com'
-      PGADMIN_DEFAULT_PASSWORD: '123456'
+      PGADMIN_DEFAULT_PASSWORD: 'Senh@123'
     depends_on:
-      - solid-postgres
+      - market_postgres
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
-  solid-mongo:
-    container_name: 'solid-mongo'
+  market_mongo:
+    container_name: 'market_mongo'
     image: 'mongo'
     ports:
       - '27017:27017'

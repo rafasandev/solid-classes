@@ -1,4 +1,4 @@
-# Copilot Instructions - UniMarket Solid Classes
+# Copilot Instructions - UniMarket
 
 ## Project Context
 
@@ -68,38 +68,46 @@ MongoDB is used for all structures that need **flexibility, high read volume, lo
 
 #### 🧩 How Products and Variations Work in MongoDB
 
-Instead of several normalized tables (like `products`, `product_variations`, `variation_categories`), each product is stored as a **single document** containing all variations within an array:
+**Important:** `ProductVariation` is stored as a **separate MongoDB document** (not embedded in Product). Each variation has its own `_id` and references the parent `Product` via `productId`.
 
+Product Structure:
 ```json
 {
   "_id": "uuid",
-  "name": "Pizza Calabresa",
+  "productName": "Pizza Calabresa",
   "description": "...",
   "basePrice": 35.90,
   "companyId": "uuid-company",
   "categoryId": "uuid-category",
   "stockQuantity": 10,
+  "variations": [],
+  "createdAt": "2025-01-01T10:00:00Z",
+  "updatedAt": "2025-01-15T14:30:00Z"
+}
+```
+
+ProductVariation Structure (separate document):
+```json
+{
+  "_id": "uuid",
+  "productId": "uuid-product",
+  "categoryName": "Tamanho",
+  "categoryType": "GLOBAL",
+  "value": "Grande",
+  "valueType": "TEXT",
+  "additionalPrice": 10,
+  "stockQuantity": 5,
   "available": true,
-  "variations": [
-    {
-      "categoryName": "Tamanho",
-      "value": "Grande",
-      "additionalPrice": 10,
-      "stockQuantity": 5,
-      "available": true
-    }
-  ],
   "createdAt": "2025-01-01T10:00:00Z",
   "updatedAt": "2025-01-15T14:30:00Z"
 }
 ```
 
 **Benefits:**
-- Zero JOINs
-- Extremely fast queries
+- Separate lifecycle for Product and Variations
+- Easy to query variations independently
+- Product maintains a list of variation references for convenience
 - Flexible and expandable structure
-- Variations are added to the document with `$push`
-- Filters are done within the array (`variations.value`, `variations.categoryName`)
 
 #### 🧾 How Logs Are Handled in MongoDB
 
@@ -155,7 +163,7 @@ Logs do NOT stay in PostgreSQL. MongoDB is used because it:
 
 > 🔷 **Padrão oficial**: todo o projeto segue Arquitetura Hexagonal (Ports & Adapters). Quando criar ou alterar componentes, mantenha a separação Controller → UseCase → Service → Port → Adapter intacta para garantir baixo acoplamento e facilidade na troca de tecnologias (como PostgreSQL e MongoDB).
 
-**Domain Module Structure**: Each domain (product, cart, user, profile, etc.) in `src/main/java/com/example/solid_classes/core/` follows this consistent layout:
+**Domain Module Structure**: Each domain (product, cart, user, profile, etc.) in `src/main/java/com/example/market_api/core/` follows this consistent layout:
 ```
 domain/
 ├── controller/      # REST endpoints with @Valid annotations
@@ -200,12 +208,14 @@ Para garantir consistência em toda a base de código, siga este padrão rigoros
     - `core/<domain>/dto` — `*Form` (entrada), `*ResponseDto` (saída). Mensagens de validação em Português.
     - `core/<domain>/mapper` — `@Component` que converte `Form` ↔ `Entity` ↔ `ResponseDto` (não usar MapStruct).
     - `core/<domain>/model` — Entidades JPA (estendem `AuditableEntity` ou `ProfileEntity`) ou Documentos Mongo (estendem `AuditableMongoEntity`).
+    - `core/<domain>/model/enums/` — Enums específicos do domínio.
     - `core/<domain>/ports` — interfaces `*Port` que estendem `NamedCrudPort<T>` (contrato da camada de domínio).
     - `core/<domain>/repository` — Diretório de persistência separado por tipo de banco:
         - `core/<domain>/repository/jpa/` — interfaces `JpaRepository<T, UUID>` para entidades PostgreSQL.
         - `core/<domain>/repository/mongo/` — interfaces `MongoRepository<T, UUID>` para documentos MongoDB.
     - `core/<domain>/service` — `*Service` para validações leves e orquestração local (delegam persistência ao Port).
     - `core/<domain>/service/Register*UseCase.java` — caso de uso transacional para operações complexas envolvendo múltiplos serviços/adapters.
+    - `core/<domain>/service/Get*UseCase.java` — caso de uso para operações de leitura com transformação para DTOs.
 
 - **Nomenclatura e arquivos de classe (padrão):**
     - Port: `DomainPort` (ex.: `ProductPort`)
@@ -229,19 +239,25 @@ Para garantir consistência em toda a base de código, siga este padrão rigoros
     - Sempre passe `entityName` para mensagens amigáveis (ex.: "Produto não encontrado(a)").
     - Evite lógica de negócio nas adapters — elas são adaptadores de infraestrutura.
     - **Regra crítica:** Escolha o adapter correto baseado no tipo de repositório:
-        - Entidade JPA → `repository/jpa/` → `NamedCrudAdapter`
-        - Documento Mongo → `repository/mongo/` → `NamedMongoAdapter`
+        - Entidade JPA → `repository/jpa/` → `NamedCrudAdapter` → estende `AuditableEntity`
+        - Documento Mongo → `repository/mongo/` → `NamedMongoAdapter` → estende `AuditableMongoEntity`
+    - **NamedCrudAdapter**: Para PostgreSQL (JPA), disponibiliza todos os métodos CRUD padrão.
+    - **NamedMongoAdapter**: Para MongoDB, adiciona lógica de geração de UUID antes do save (`generateId()`).
+    - Adapters podem adicionar métodos customizados delegando ao repositório (ex.: `findByCompanyId`, `searchByName`).
 
 - **Services e UseCases:**
     - `*Service` contém validações reutilizáveis e lógica leve que não exige transação distribuída.
     - Crie classes de UseCase para operações transacionais e para outras responsabilidades do domínio — não apenas para operações de "registro"/criação. UseCases servem para isolar e orquestrar fluxos de negócio e para manter cada unidade de lógica com responsabilidade única.
         - Exemplos de UseCases além de `Register*UseCase`:
-            - `GetOrderUseCase` — carregamento de pedidos com associações e regras de visibilidade/escopo.
+            - `Get*UseCase` — carregamento de entidades com associações e transformação para DTOs (ex.: `GetProductUseCase`, `GetCategoryUseCase`).
             - `CheckoutOrderUseCase` — fluxo transacional para finalizar um pedido (decremento de estoque, criação de OrderItems, mudança de status, notificações).
             - `CancelOrderUseCase`, `UpdateCartItemQuantityUseCase`, `CalculateCartTotalsUseCase`, etc.
-    - Cada UseCase deve ter uma única responsabilidade: orquestrar o fluxo do caso de uso, delegar validações para `*Service` e persistência para `*Port`/Adapter, e retornar DTOs. Anote o método de entrada com `@Transactional` quando o fluxo modificar múltiplos agregados ou persistir mudanças em mais de uma dependência.
+    - Cada UseCase deve ter uma única responsabilidade: orquestrar o fluxo do caso de uso, delegar validações para `*Service` e persistência para `*Port`/Adapter, e retornar DTOs. 
+    - **Anotação @Transactional:**
+        - Use `@Transactional` quando o fluxo modificar múltiplos agregados ou persistir mudanças (write operations).
+        - Use `@Transactional(readOnly = true)` para operações de leitura que precisam garantir consistência de snapshot.
     - Testar UseCases com testes de integração que carreguem contexto mínimo do Spring (ou testes slice quando aplicável). Preferir testes que validem o fluxo completo do caso de uso.
-# Copilot Instructions - UniMarket Solid Classes
+# Copilot Instructions - UniMarket
 
 ## 1. Project Context & Business Overview
 
@@ -263,6 +279,16 @@ Para garantir consistência em toda a base de código, siga este padrão rigoros
 - **Database:** Hybrid Architecture (PostgreSQL + MongoDB)
 - **Authentication:** JWT (Stateless)
 - **Documentation:** SpringDoc OpenAPI v2 (Swagger)
+- **Build Tool:** Maven
+- **Key Dependencies:** Spring Data JPA, Spring Data MongoDB, Spring Security, JJWT, Lombok
+
+**Configuration Classes:**
+- `JpaConfiguration` — configura auditoria JPA e PostgreSQL
+- `MongoConfiguration` — configura auditoria MongoDB
+- `SecurityConfiguration` — configura autenticação JWT e hierarquia de roles
+- `ApplicationConfiguration` — beans gerais (PasswordEncoder, AuthenticationManager)
+- `OpenApiConfig` — configuração do Swagger/OpenAPI
+- `RestExceptionHandler` — tratamento global de exceções
 
 ---
 
@@ -298,7 +324,7 @@ The application uses two databases to optimize for transactional integrity (SQL)
 
 ## 4. Layer Structure (Hexagonal)
 
-Follow this directory structure for every new domain (`src/main/java/com/example/solid_classes/core/<domain>/`):
+Follow this directory structure for every new domain (`src/main/java/com/example/market_api/core/<domain>/`):
 
 1.  **`controller/`** (Adapter In):
     - REST Endpoints.
@@ -352,7 +378,13 @@ Follow this directory structure for every new domain (`src/main/java/com/example
 ### 🔹 Exception Handling
 **Correction:** Avoid `throws` in method signatures. Use unchecked exceptions.
 * *Pattern:* Throw `BusinessRuleException("Message in Portuguese")` for logic failures.
-* *Pattern:* Throw `EntityNotFoundException` (via `NamedCrudAdapter`) when resources are missing.
+* *Pattern:* Throw `EntityNotFoundException` (via `NamedCrudAdapter.throwEntityNotFound()`) when resources are missing.
+* *Handling:* `RestExceptionHandler` centraliza o tratamento de exceções globalmente:
+    - `BusinessRuleException` → 400 Bad Request
+    - `EntityNotFoundException` → 404 Not Found
+    - `MethodArgumentNotValidException` → 400 com detalhes de validação
+    - `DataIntegrityViolationException` → 409 Conflict
+    - `UserRuleException` → 400 Bad Request
 
 ### 🔹 Monetary Values
 **Correction:** ALWAYS use `BigDecimal`.
@@ -375,17 +407,72 @@ The system is a Marketplace. One `Cart` can contain items from multiple Sellers.
 ### 📸 Order Snapshots
 **Rule:** `Order` and `OrderItem` must represent the **past**.
 **Implementation:**
-- `OrderItem` must store a copy of: `productName`, `unitPrice` (at time of purchase), and `quantity`.
+- `OrderItem` must store a copy of: `productName`, `productPrice`, `variationAdditionalPriceSnapshot`, `finalUnitPriceSnapshot`, and `orderQuantity`.
 - Do **NOT** rely on the `Product` link to get the price, as the vendor may change it later.
+- Each `OrderItem` calculates its own `subtotal` via `calculateSubtotal()` method.
+
+### 🛒 Cart Item Structure
+**CartItem (PostgreSQL):**
+- References products by UUID only (`productId`, `productVariationId`)
+- Stores snapshot data: `productName`, `unitPriceSnapshot`
+- Contains `itemQuantity` and `status` (ReservationStatus enum)
+- Has unique constraint per cart + product variation combination
+- Uses indexed columns for performance (`cart_id`, `product_variation_id`)
 
 ### 📦 Inventory Management
 - **Source of Truth:** MongoDB (`Product.stockQuantity`).
 - **Reservation:** When an `Order` is created, decrement stock in MongoDB.
 - **Validation:** `RegisterCartItemUseCase` must check Mongo stock availability before adding to Postgres Cart.
 
+### 🧬 Profile Inheritance & Entity Relationships
+
+**ProfileEntity Inheritance Pattern:**
+- `ProfileEntity` is a `@MappedSuperclass` (not an entity itself).
+- Two concrete implementations stored in separate tables:
+    - `IndividualProfile` → `individual_profiles` table
+    - `CompanyProfile` → `company_profiles` table
+- Both use `@MapsId` to share the same ID with their linked `User` entity (one-to-one).
+- `ProfileEntity` extends the base auditing structure but does NOT extend `AuditableEntity`.
+
+**VariationCategory Inheritance Pattern:**
+- `VariationCategoryEntity` is a JPA entity with `@Inheritance(strategy = InheritanceType.JOINED)`.
+- Two concrete implementations:
+    - `VariationCategoryGlobal` → `variation_categories_global` table (platform-wide)
+    - `VariationCategorySeller` → `variation_categories_seller` table (company-specific)
+- Adapters: `VariationCategoryGlobalAdapter` e `VariationCategorySellerAdapter` são separados.
+
+**Bidirectional Relationship Helpers:**
+- Entities com relacionamentos bidirecionais implementam métodos helper para manter consistência:
+    - `Product.setCategory(Category)` → atualiza ambos os lados da relação.
+    - `OrderItem.setOrder(Order)` → adiciona/remove o item na lista do Order.
+    - `CartItem.setCart(Cart)` → similar.
+- **SEMPRE** use esses métodos helper ao invés de modificar diretamente as coleções.
+
 ---
 
-## 7. AI Agent Checklist
+## 7. Security & Authentication
+
+**JWT-based Authentication:**
+- `JwtService` gerencia geração e validação de tokens JWT.
+- `JwtAuthFilter` intercepta requisições e valida tokens.
+- `SecurityConfiguration` define:
+    - Endpoints públicos: `/auth/**`, `/user/**`, `/swagger-ui/**`, `/v3/api-docs/**`
+    - Todos os outros endpoints requerem autenticação.
+    - Stateless session management (JWT).
+    - CORS habilitado para todos os origins em desenvolvimento.
+
+**Role Hierarchy:**
+- `ROLE_ADMIN > ROLE_COMPANY`
+- `ROLE_ADMIN > ROLE_INDIVIDUAL`
+- Controllers usam `@PreAuthorize("hasRole('ROLE_NAME')")` para controle de acesso.
+
+**User Context:**
+- `UserService.getLoggedInUser()` recupera o usuário autenticado do contexto Spring Security.
+- UseCases devem validar ownership (ex.: um Company só pode criar produtos para si mesmo).
+
+---
+
+## 8. AI Agent Checklist
 
 Before generating code, verify:
 
@@ -395,5 +482,19 @@ Before generating code, verify:
 4.  [ ] **Language:** Are validation messages/Exceptions in Portuguese (PT-BR)? -> **YES**.
 5.  [ ] **Safety:** Did I initialize Lists as `null` in the Entity to let Hibernate handle it? -> **YES**.
 6.  [ ] **Logic:** Did I use `BigDecimal` for money? -> **YES**.
+7.  [ ] **Adapter:** Did I extend the correct base adapter (`NamedCrudAdapter` for JPA, `NamedMongoAdapter` for Mongo)? -> **YES**.
+8.  [ ] **UseCase:** Did I annotate with `@Transactional` or `@Transactional(readOnly = true)` appropriately? -> **YES**.
+9.  [ ] **Security:** Did I validate user ownership in UseCases that modify user-specific resources? -> **YES**.
+10. [ ] **Repository Location:** Is the repository in the correct subdirectory (`jpa/` or `mongo/`)? -> **YES**.
+
+---
+
+## 9. Key Service Classes Reference
+
+- `auth/service/JwtService.java` - JWT token generation/validation
+- `auth/service/JwtAuthFilter.java` - JWT authentication filter
+- `user/service/UserService.java` - User management and logged user context
+- `role/service/RoleSeeder.java` - Initial role setup on application startup
+- `order/service/PickupCodeGenerator.java` - Unique pickup code generation for orders
 - `auth/service/JwtService.java` - JWT token generation/validation
 
