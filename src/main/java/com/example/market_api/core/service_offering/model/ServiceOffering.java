@@ -1,12 +1,15 @@
 package com.example.market_api.core.service_offering.model;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.market_api.common.base.AuditableMongoEntity;
+import com.example.market_api.core.service_offering.model.enums.ServiceModel;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,13 +30,19 @@ public class ServiceOffering extends AuditableMongoEntity {
 
     private Integer durationMinutes;
 
+    private Boolean available;
+
+    private ServiceModel model;
+
+    private List<Integer> weekDaysAvailable;
+
+    private Map<Integer, List<TimeRange>> dailyTimeRanges;
+
     @Indexed
     private UUID companyId;
 
     @Indexed
     private UUID categoryId;
-
-    private Boolean available;
 
     public void activate() {
         this.available = true;
@@ -44,7 +53,7 @@ public class ServiceOffering extends AuditableMongoEntity {
     }
 
     public boolean isAvailable() {
-        return Boolean.TRUE.equals(available);
+        return available != null && available;
     }
 
     public void updateDetails(String serviceName, String description, BigDecimal price, Integer durationMinutes) {
