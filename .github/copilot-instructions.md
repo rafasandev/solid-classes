@@ -330,7 +330,8 @@ Follow this directory structure for every new domain (`src/main/java/com/example
     - REST Endpoints.
     - Uses `@Valid` on DTOs.
     - Returns `ResponseEntity<ResponseDto>`.
-    - **Rule:** Never allows Entities to leak to the API surface.
+  - **Rule:** Never allows Entities to leak to the API surface.
+  - **Rule:** Controllers depend **only** on UseCases (application services). Do **not** inject domain Services, Ports, Repositories or Mappers directly in controllers.
 
 2.  **`dto/`** (Data Transfer Objects):
     - `[Domain]Form`: Input data with Jakarta Validation (`@NotNull`, `@DecimalMin`).
