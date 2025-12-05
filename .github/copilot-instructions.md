@@ -310,7 +310,7 @@ The application uses two databases to optimize for transactional integrity (SQL)
 **Responsibility:** High-read volume, flexible schema, product catalog, logs.
 **Persistence:** `MongoRepository`.
 **Documents:**
-- **Catalog:** `Product` (Document), `ProductVariation` (Embedded Array inside Product)
+- **Catalog:** `Product` (Document que referencia variações via `@DBRef(lazy = true)` e mantém `totalStockCache`), `ProductVariation` (coleção independente com `productId` como chave de vínculo)
 - **Services:** `ServiceOffering`
 - **Audit:** `Logs`, `AccessHistory`
 

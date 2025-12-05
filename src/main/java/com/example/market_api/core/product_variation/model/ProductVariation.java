@@ -3,6 +3,8 @@ package com.example.market_api.core.product_variation.model;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.example.market_api.common.base.AuditableMongoEntity;
 import com.example.market_api.core.product_variation.model.enums.VariationCategoryType;
 import com.example.market_api.core.product_variation.model.enums.VariationValueType;
@@ -19,6 +21,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Document(collection = "product_variations")
 public class ProductVariation extends AuditableMongoEntity {
 
     private UUID productId;

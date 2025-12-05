@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.market_api.common.base.AuditableMongoEntity;
@@ -28,7 +29,7 @@ public class Product extends AuditableMongoEntity {
 
     private BigDecimal basePrice;
 
-    private int stockQuantity;
+    private int totalStockCache;
 
     @Indexed
     private UUID companyId;
@@ -36,6 +37,7 @@ public class Product extends AuditableMongoEntity {
     @Indexed
     private UUID categoryId;
 
+    @DBRef(lazy = true)
     private List<ProductVariation> variations;
 
     // Referência textual do ponto físico (ex.: "Biblioteca - Mesa 12")
@@ -44,36 +46,60 @@ public class Product extends AuditableMongoEntity {
     // ----------------- Product methods -----------------
 
     public void addVariation(ProductVariation variation) {
-        if (this.variations == null) {
-            this.variations = new ArrayList<>();
+        validatePersistedVariation(variation);
+        ensureVariationListInitialized();
+
+        boolean alreadyLinked = this.variations.stream()
+                .anyMatch(existing -> existing.getId().equals(variation.getId()));
+
+        if (!alreadyLinked) {
+            this.variations.add(variation);
         }
-        this.variations.add(variation);
-        this.increaseProductStock(variation.getStockQuantity());
+
+        recalculateTotalStock();
     }
 
     public void removeVariation(UUID variationId) {
-        if (this.variations != null) {
-            ProductVariation variation = findVariation(variationId);
-            this.decreaseProductStock(variation.getStockQuantity());
-            this.variations.remove(variation);
+        if (variationId == null || this.variations == null) {
+            return;
+        }
+
+        boolean removed = this.variations.removeIf(variation -> variationId.equals(variation.getId()));
+        if (removed) {
+            recalculateTotalStock();
         }
     }
 
     public boolean productIsAvaiable() {
-        return stockQuantity > 0;
+        return totalStockCache > 0;
     }
 
     public boolean productHasStock(int quantity) {
-        return stockQuantity >= quantity;
+        return totalStockCache >= quantity;
+    }
+
+    public int getStockQuantity() {
+        return totalStockCache;
+    }
+
+    public void recalculateTotalStock() {
+        if (this.variations == null || this.variations.isEmpty()) {
+            this.totalStockCache = 0;
+            return;
+        }
+
+        this.totalStockCache = this.variations.stream()
+                .mapToInt(ProductVariation::getStockQuantity)
+                .sum();
     }
 
     private void decreaseProductStock(int quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantidade não pode ser negativa");
         }
-        this.stockQuantity -= quantity;
-        if (this.stockQuantity < 0) {
-            this.stockQuantity = 0;
+        this.totalStockCache -= quantity;
+        if (this.totalStockCache < 0) {
+            this.totalStockCache = 0;
         }
     }
 
@@ -81,16 +107,20 @@ public class Product extends AuditableMongoEntity {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantidade não pode ser negativa");
         }
-        this.stockQuantity += quantity;
+        this.totalStockCache += quantity;
     }
 
     // --------------- Product Variations methods -----------------
 
     public ProductVariation findVariation(UUID variationId) {
+        if (this.variations == null) {
+            throw new IllegalArgumentException("Produto não possui variações carregadas");
+        }
+
         return variations.stream()
-                .filter(v -> v.getId().equals(variationId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Variação não encontrada"));
+            .filter(v -> v.getId().equals(variationId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Variação não encontrada"));
     }
 
     public void decreaseVariationStock(ProductVariation variation, int quantity) {
@@ -114,6 +144,7 @@ public class Product extends AuditableMongoEntity {
 
         variation.setStockQuantity(variation.getStockQuantity() - quantity);
         this.decreaseProductStock(quantity);
+        recalculateTotalStock();
     }
 
     public void increaseVariationStock(UUID variationId, int quantity) {
@@ -127,6 +158,7 @@ public class Product extends AuditableMongoEntity {
         variation.setStockQuantity(variationNewStock);
 
         this.increaseProductStock(quantity);
+        recalculateTotalStock();
     }
 
     public boolean variationIsAvaiable(UUID variationId) {
@@ -139,4 +171,15 @@ public class Product extends AuditableMongoEntity {
         return this.basePrice.add(variation.getVariationAdditionalPrice());
     }
 
+    private void ensureVariationListInitialized() {
+        if (this.variations == null) {
+            this.variations = new ArrayList<>();
+        }
+    }
+
+    private void validatePersistedVariation(ProductVariation variation) {
+        if (variation == null || variation.getId() == null) {
+            throw new IllegalArgumentException("Variação precisa estar persistida antes de ser vinculada");
+        }
+    }
 }
