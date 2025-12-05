@@ -35,12 +35,14 @@ public class Cart extends AuditableEntity {
     public void addCartItem(CartItem cartItem) {
         if (cartItem != null && this.items != null) {
             this.items.add(cartItem);
+            cartItem.setCart(this);
         }
     }
 
     public void removeCartItem(CartItem cartItem) {
         if (cartItem != null && this.items != null) {
             this.items.remove(cartItem);
+            cartItem.setCart(null);
         }
     }
 

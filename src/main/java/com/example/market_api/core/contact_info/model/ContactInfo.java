@@ -1,16 +1,16 @@
 package com.example.market_api.core.contact_info.model;
 
 import com.example.market_api.common.base.AuditableEntity;
-import com.example.market_api.core.contact_info.model.enums.ContactChannel;
-import com.example.market_api.core.profile.model.ProfileEntity;
+import com.example.market_api.core.user.model.User;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -19,20 +19,13 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @NoArgsConstructor
 public class ContactInfo extends AuditableEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "contact_method_id", nullable = false)
+    private ContactType contactType;
     
-    @Column(nullable = false, unique = true)
-    private ContactChannel channel;
-
-    @Column(nullable = false)
-    private String value;
-
-    @Column(nullable = false)
-    private String baseUrl;
-
-    @Column(nullable = false)
-    private String validationRegex;
-
+    @Setter
     @ManyToOne(optional = false)
-    @JoinColumn(name = "profile_id")
-    private ProfileEntity profile;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User profile;
 }

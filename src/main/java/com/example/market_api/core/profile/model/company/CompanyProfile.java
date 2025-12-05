@@ -66,11 +66,13 @@ public class CompanyProfile extends ProfileEntity {
         if (variationCategory != null && this.variationCategories != null
                 && !this.variationCategories.contains(variationCategory))
             this.variationCategories.add(variationCategory);
+            variationCategory.setCompany(this);
     }
 
     public void removeVariationCategory(VariationCategorySeller variationCategory) {
         if (variationCategory != null && this.variationCategories != null
                 && this.variationCategories.contains(variationCategory))
             this.variationCategories.remove(variationCategory);
+            variationCategory.setCompany(null);
     }
 }

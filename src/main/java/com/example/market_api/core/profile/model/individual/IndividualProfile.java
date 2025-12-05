@@ -6,8 +6,10 @@ import com.example.market_api.core.cart.model.Cart;
 import com.example.market_api.core.order.model.Order;
 import com.example.market_api.core.profile.model.ProfileEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -20,7 +22,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor
-public class IndividualProfile extends ProfileEntity{
+public class IndividualProfile extends ProfileEntity {
 
     @Column(nullable = false)
     private String name;
@@ -31,7 +33,7 @@ public class IndividualProfile extends ProfileEntity{
     @OneToOne(mappedBy = "profile")
     private Cart cart;
 
-    @OneToMany(mappedBy = "customer", orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Order> orders;
 
 }

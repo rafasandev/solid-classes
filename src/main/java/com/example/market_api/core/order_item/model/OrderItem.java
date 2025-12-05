@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -49,21 +50,10 @@ public class OrderItem extends AuditableEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    public void setOrder(Order order) {
-        if (this.order != null) {
-            this.order.removeOrderItem(this);
-        }
-
-        this.order = order;
-
-        if (order != null) {
-            order.addOrderItem(this);
-        }
-    }
 
     public void calculateSubtotal() {
         this.subtotal = finalUnitPriceSnapshot.multiply(BigDecimal.valueOf(orderQuantity));

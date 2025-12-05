@@ -9,6 +9,7 @@ import com.example.market_api.core.order_item.model.OrderItem;
 import com.example.market_api.core.profile.model.company.CompanyProfile;
 import com.example.market_api.core.profile.model.individual.IndividualProfile;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,9 +40,9 @@ public class Order extends AuditableEntity {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal orderTotal;
-    
+
     @Setter
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -55,12 +56,14 @@ public class Order extends AuditableEntity {
     public void addOrderItem(OrderItem orderItem) {
         if (orderItem != null && this.orderItems != null) {
             this.orderItems.add(orderItem);
+            orderItem.setOrder(this);
         }
     }
 
     public void removeOrderItem(OrderItem orderItem) {
         if (orderItem != null && this.orderItems != null) {
             this.orderItems.remove(orderItem);
+            orderItem.setOrder(null);
         }
     }
 }

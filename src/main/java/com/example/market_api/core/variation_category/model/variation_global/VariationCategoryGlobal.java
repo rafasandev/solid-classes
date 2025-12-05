@@ -1,6 +1,6 @@
 package com.example.market_api.core.variation_category.model.variation_global;
 
-import java.util.List;
+import java.util.Set;
 
 import com.example.market_api.core.category.model.Category;
 import com.example.market_api.core.variation_category.model.VariationCategoryEntity;
@@ -24,15 +24,19 @@ public class VariationCategoryGlobal extends VariationCategoryEntity {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "category_global_variations_mapping", joinColumns = @JoinColumn(name = "global_variation_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<Category> categories;
+    private Set<Category> categories;
 
     public void addCategory(Category category) {
-        if (category != null && !this.categories.contains(category))
+        if (category != null && !this.categories.contains(category)){
             this.categories.add(category);
+            category.addVariationCategory(this);
+        }
     }
 
     public void removeCategory(Category category) {
-        if (category != null && this.categories.contains(category))
+        if (category != null && this.categories.contains(category)){
             this.categories.remove(category);
+            category.removeVariationCategory(this);
+        }
     }
 }

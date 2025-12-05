@@ -1,6 +1,6 @@
 package com.example.market_api.core.category.model;
 
-import java.util.List;
+import java.util.Set;
 
 import com.example.market_api.common.base.AuditableEntity;
 import com.example.market_api.core.profile.model.company.enums.BusinessSector;
@@ -28,6 +28,17 @@ public class Category extends AuditableEntity {
     private BusinessSector businessSector;
 
     @ManyToMany(mappedBy = "categories")
-    private List<VariationCategoryGlobal> variationCategories;
+    private Set<VariationCategoryGlobal> variationCategories;
 
+    public void addVariationCategory(VariationCategoryGlobal variationCategory) {
+        if (variationCategory != null && !this.variationCategories.contains(variationCategory)){
+            this.variationCategories.add(variationCategory);
+        }
+    }
+
+    public void removeVariationCategory(VariationCategoryGlobal variationCategory) {
+        if (variationCategory != null && this.variationCategories.contains(variationCategory)){
+            this.variationCategories.remove(variationCategory);
+        }
+    }
 }

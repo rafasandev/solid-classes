@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -48,9 +49,10 @@ public class CartItem extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ReservationStatus status;
-
+    
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
     public void addQuantity(int quantity) {
