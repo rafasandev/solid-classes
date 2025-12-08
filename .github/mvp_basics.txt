@@ -1,0 +1,52 @@
+REGISTRO DE VENDEDOR
+    - Criação do User
+    - Criação do Perfil do Vendedor
+    - Configurar o saldo do vendedor como 0 (DESENVOLVIMENTO PENDENTE)
+    - Status do vendedor como ATIVO, mas com status de venda como FECHADO (DESENVOLVIMENTO PENDENTE)
+
+CONFIGURAÇÃO DE DISPONIBILIDADE
+    - Vendedor informa os dias e horários de funcionamento da loja
+    - Gravação dos dados no perfil do vendedor
+
+CRIAÇÃO DE PRODUTO
+    - Envio de dados básicos do produto (nome, descrição, preço base, categoria)
+    - Criação do produto no MongoDB com status INATIVO e sem variações
+    - Vinculação do vendedor ID ao produto
+
+CRIAÇÃO DE VARIAÇÃO DE PRODUTO
+    - Adição de uma nova variação ao produto existente
+    - Envio de dados da variação (nome, preço, estoque)
+    - Gravação da variação no produto no MongoDB
+
+ADICIONAR ITEM NO CARRINHO
+    - Seleção da variação do produto
+    - Especificação da quantidade desejada
+    - Verificação de estoque disponível (Se não houver estoque, a variação nem deve aparecer para seleção [DESENVOLVIMENTO PENDENTE DE VERIFICAÇÃO])
+    - Snapshot do item adicionado no carrinho do usuário
+
+VISUALIZAR CARRINHO
+    - Busca do carrinho do usuário
+    - Cálculo do total do carrinho
+    - Verificação em tempo real para status dos produtos (Se algum produto estiver INATIVO, deve ser removido do carrinho automaticamente [DESENVOLVIMENTO PENDENTE DE VERIFICAÇÃO])
+
+FINALIZAÇÃO DO PEDIDO
+    - Separação dos itens por vendedor
+    - Cálculo do total por vendedor
+    - Criação do pedido no MongoDB com status PENDENTE para cada vendedor
+    - Criação de todos os snapshots dos itens do pedido
+    - Ajuste do estoque dos produtos conforme os itens do pedido
+    - Remoção dos itens do carrinho do usuário e atualização do carrinho (Dados persistidos nos snapshots dos itens do pedido)
+
+RETIRADA DE PEDIDO (MUDANÇA DE STATUS)
+    - Ida do comprador até o vendedor para retirada do pedido
+    - Informe do código de confirmação ao vendedor
+    - Verificação do código pelo vendedor e recuperação do pedido correspondente
+    - Mudança do status do pedido de acordo com o fluxo:
+        Status inicial -> PENDENTE
+        Se o cliente cancelar o pedido -> CANCELADO
+        Se o pagamento for antecipado -> PAGO
+        Se o pedido estiver pronto para retirada -> PRONTO_RETIRADA
+        Se o cliente retirar o pedido -> COMPLETADO
+        Se o pedido não for retirado em 24 horas -> EXPIRADO
+        Se o cliente solicitar confirmação -> AGUARDANDO_CONFIRMACAO
+        Se o vendedor marcar como sem retirada -> SEM_RETIRADA (Usado para contabilização interna de punição ao cliente que não retirou o pedido, evitando brincadeiras ou fraude no sistema [DESENVOLVIMENTO PENDENTE])
