@@ -7,7 +7,7 @@ import com.example.market_api.core.order.model.Order;
 import com.example.market_api.core.payment_method.model.PaymentMethod;
 import com.example.market_api.core.profile.model.ProfileEntity;
 import com.example.market_api.core.profile.model.company.enums.BusinessSector;
-import com.example.market_api.core.profile.model.value.CompanyDailyAvailability;
+import com.example.market_api.core.profile.model.company.value.CompanyDailyAvailability;
 import com.example.market_api.core.variation_category.model.variation_seller.VariationCategorySeller;
 
 import jakarta.persistence.CascadeType;

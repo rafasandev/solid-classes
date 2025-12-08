@@ -2,6 +2,7 @@ package com.example.market_api.core.profile.mapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,6 +19,8 @@ import com.example.market_api.core.profile.dto.company.CompanyProfileResponseDto
 import com.example.market_api.core.profile.dto.individual.IndividualProfileForm;
 import com.example.market_api.core.profile.dto.individual.IndividualProfileResponseDto;
 import com.example.market_api.core.profile.model.company.CompanyProfile;
+import com.example.market_api.core.profile.model.company.value.CompanyDailyAvailability;
+import com.example.market_api.core.profile.model.company.value.TimeRange;
 import com.example.market_api.core.profile.model.individual.IndividualProfile;
 import com.example.market_api.core.user.model.User;
 
@@ -52,7 +55,7 @@ public class ProfileMapper {
                 .contactMethods(mapContactInfos(savedProfile.getUser()))
                 .acceptedPaymentMethods(mapPaymentMethods(savedProfile.getPaymentMethods()))
                 .weekDaysAvailable(savedProfile.getWeekDaysAvailable())
-                .dailyAvailableTimeRanges(savedProfile.getDailyAvailableTimeRanges())
+                .dailyAvailableTimeRanges(mapDailyAvailability(savedProfile.getDailyAvailableTimeRanges()))
                 .build();
     }
 
@@ -102,5 +105,15 @@ public class ProfileMapper {
                         .iconUrl(method.getIconUrl())
                         .build())
                 .collect(Collectors.toSet());
+    }
+
+    private Map<Integer, List<TimeRange>> mapDailyAvailability(List<CompanyDailyAvailability> availabilitySlots) {
+        if (availabilitySlots == null || availabilitySlots.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return availabilitySlots.stream()
+                .collect(Collectors.groupingBy(CompanyDailyAvailability::getWeekDay,
+                        Collectors.mapping(slot -> new TimeRange(slot.getStartTime(), slot.getEndTime()), Collectors.toList())));
     }
 }

@@ -1,5 +1,9 @@
 package com.example.market_api.core.payment_method.service;
 
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 import com.example.market_api.common.base.NamedCrudAdapter;
@@ -12,5 +16,10 @@ public class PaymentMethodAdapter extends NamedCrudAdapter<PaymentMethod, Paymen
     
     public PaymentMethodAdapter(PaymentMethodRepository repository) {
         super(repository, "Método de Pagamento");
+    }
+
+    @Override
+    public List<PaymentMethod> findAllByIds(Set<UUID> ids) {
+        return repository.findAllById(ids);
     }
 }
