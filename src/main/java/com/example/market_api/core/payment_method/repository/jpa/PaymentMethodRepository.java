@@ -1,4 +1,4 @@
-package com.example.market_api.core.payment_method.repository;
+package com.example.market_api.core.payment_method.repository.jpa;
 
 import java.util.UUID;
 
