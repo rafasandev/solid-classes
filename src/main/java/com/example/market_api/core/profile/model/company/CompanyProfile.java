@@ -1,5 +1,6 @@
 package com.example.market_api.core.profile.model.company;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -13,11 +14,11 @@ import com.example.market_api.core.variation_category.model.variation_seller.Var
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -39,6 +40,9 @@ public class CompanyProfile extends ProfileEntity {
 
     @Column(nullable = false, unique = true)
     private String cnpj;
+
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
