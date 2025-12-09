@@ -45,6 +45,14 @@ public class User extends AuditableEntity implements UserDetails {
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    public void setStatus(boolean isActive) {
+        this.active = isActive;
+    }
+
+    public boolean userHasContactInfoFilled() {
+        return contacts != null && !contacts.isEmpty();
+    }
+
     public void addContact(ContactInfo contact) {
         contacts.add(contact);
     }
@@ -61,7 +69,8 @@ public class User extends AuditableEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (roles == null) return Collections.emptyList();
+        if (roles == null)
+            return Collections.emptyList();
 
         return roles.stream().map(role -> {
             switch (role.getName()) {

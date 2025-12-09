@@ -1,6 +1,7 @@
 package com.example.market_api.core.user.service;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
