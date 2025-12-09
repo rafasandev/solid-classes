@@ -1,0 +1,43 @@
+ANOTAÇÕES GERAIS
+
+- Ao criar um usuário novo, ele pode ser tanto um comprador quanto um vendedor. Informações básicas para um usuário: email, senha e status.
+- Se for um comprador, as informações adicionais do perfil são: nome e cpf.
+- Se for um vendedor, as informações adicionais são: nome da loja, cnpj e setor de atuação (Comércio ou Serviço).
+
+- comprador
+    - Ao registrar um novo comprador, um novo carrinho vazio é criado, vinculado ao ID do usuário
+    - Ao finalizar um pedido, o carrinho do comprador é esvaziado e atualizado, nunca deletado
+    - O novo comprador é registrado com o status inativo, devendo completar o perfil com ao menos um meio de contato
+- vendedor
+    - O vendedor é registrado com informações básicas, mas status inativo. Só será dado como ativo após configurar disponibilidade e ao menos um meio de contato (DESENVOLVIMENTO PENDENTE)
+    - O vendedor é registrado com um saldo inicial de 0
+    - Os meios de pagamento serão configurados com o envio da seguinte estrutura de dados:
+        paymentMethodIds: [uuid, uuid, uuid, ...]
+    - A disponibilidade do vendedor será configurada com o envio da seguinte estrutura de dados:
+        weekDaysAvailable : [1,2,3,4,5] (1=Domingo, 2=Segunda, ..., 7=Sábado)
+        dailyAvailability(List<CompanyDailyAvailabilityForm>): [
+            {
+                weekDay: 1,
+                timeRanges (List<TimeRangeForm>): [
+                    {
+                        startTime: "08:00",
+                        endTime: "12:00"
+                    },
+                    {
+                        startTime: "14:00",
+                        endTime: "18:00"
+                    }
+                ]
+            },
+            {
+                weekDay: 2,
+                timeRanges (List<TimeRangeForm>): [
+                    {
+                        startTime: "09:00",
+                        endTime: "17:00"
+                    }
+                ]
+            }
+        ]
+
+- Ambos perfis devem configurar ao menos um meio de contato para serem ativados
