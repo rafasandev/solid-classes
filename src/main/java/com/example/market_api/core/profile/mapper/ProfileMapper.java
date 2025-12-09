@@ -1,5 +1,6 @@
 package com.example.market_api.core.profile.mapper;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +33,9 @@ public class ProfileMapper {
                 .user(user)
                 .companyName(profileForm.getCompanyName())
                 .cnpj(profileForm.getCnpj())
+                .balance(BigDecimal.ZERO)
                 .businessSector(profileForm.getBusinessSector())
-                .active(true)
+                .active(false)
                 .build();
     }
 
@@ -42,7 +44,7 @@ public class ProfileMapper {
                 .user(user)
                 .name(profileForm.getName())
                 .cpf(profileForm.getCpf())
-                .active(true)
+                .active(false)
                 .build();
     }
 

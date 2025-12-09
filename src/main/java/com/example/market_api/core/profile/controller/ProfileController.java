@@ -12,15 +12,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.market_api.core.profile.dto.common.ProfileContactConfigurationForm;
 import com.example.market_api.core.profile.dto.company.CompanyAvailabilityForm;
-import com.example.market_api.core.profile.dto.company.CompanyContactConfigurationForm;
 import com.example.market_api.core.profile.dto.company.CompanyPaymentMethodsForm;
 import com.example.market_api.core.profile.dto.company.CompanyProfileResponseDto;
+import com.example.market_api.core.profile.dto.individual.IndividualProfileResponseDto;
 import com.example.market_api.core.profile.model.company.enums.BusinessSector;
-import com.example.market_api.core.profile.service.company.ConfigureCompanyAvailabilityUseCase;
-import com.example.market_api.core.profile.service.company.ConfigureCompanyContactsUseCase;
-import com.example.market_api.core.profile.service.company.ConfigureCompanyPaymentMethodsUseCase;
-import com.example.market_api.core.profile.service.company.GetCompanyProfileUseCase;
+import com.example.market_api.core.profile.service.ConfigureProfileContactsUseCase;
+import com.example.market_api.core.profile.service.company.use_case.ConfigureCompanyAvailabilityUseCase;
+import com.example.market_api.core.profile.service.company.use_case.ConfigureCompanyPaymentMethodsUseCase;
+import com.example.market_api.core.profile.service.company.use_case.GetCompanyProfileUseCase;
 
 import jakarta.validation.Valid;
 
@@ -33,9 +34,20 @@ public class ProfileController {
 
     private final GetCompanyProfileUseCase getCompanyProfileUseCase;
     private final ConfigureCompanyAvailabilityUseCase configureCompanyAvailabilityUseCase;
-    private final ConfigureCompanyContactsUseCase configureCompanyContactsUseCase;
+    private final ConfigureProfileContactsUseCase configureProfileContactsUseCase;
     private final ConfigureCompanyPaymentMethodsUseCase configureCompanyPaymentMethodsUseCase;
 
+    // ---------------------------------- Individual Profile Endpoints ------------------------------------- //
+
+    @PutMapping("/individual/{id}/contacts")
+    @PreAuthorize("hasRole('INDIVIDUAL')")
+    public ResponseEntity<IndividualProfileResponseDto> configureIndividualContacts(
+            @PathVariable UUID id,
+            @Valid @RequestBody ProfileContactConfigurationForm form) {
+        return ResponseEntity.ok(configureProfileContactsUseCase.configureIndividualContacts(id, form));
+    }
+
+    // ------------------------------------- Company Profile Endpoints ------------------------------------- //
     @GetMapping("/company")
     public ResponseEntity<List<CompanyProfileResponseDto>> getAllCompanies() {
         return ResponseEntity.ok(getCompanyProfileUseCase.getAllCompanies());
@@ -67,17 +79,17 @@ public class ProfileController {
 
     @PutMapping("/company/{id}/contacts")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<CompanyProfileResponseDto> configureContacts(
+    public ResponseEntity<CompanyProfileResponseDto> configureCompanyContacts(
             @PathVariable UUID id,
-            @Valid @RequestBody CompanyContactConfigurationForm form) {
-        return ResponseEntity.ok(configureCompanyContactsUseCase.execute(id, form));
+            @Valid @RequestBody ProfileContactConfigurationForm form) {
+        return ResponseEntity.ok(configureProfileContactsUseCase.configureCompanyContacts(id, form));
     }
 
     @PutMapping("/company/{id}/payment-methods")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<CompanyProfileResponseDto> configurePaymentMethods(
-            @PathVariable UUID id,
+            @PathVariable UUID companyId,
             @Valid @RequestBody CompanyPaymentMethodsForm form) {
-        return ResponseEntity.ok(configureCompanyPaymentMethodsUseCase.execute(id, form));
+        return ResponseEntity.ok(configureCompanyPaymentMethodsUseCase.configurePaymentMethods(companyId, form));
     }
 }

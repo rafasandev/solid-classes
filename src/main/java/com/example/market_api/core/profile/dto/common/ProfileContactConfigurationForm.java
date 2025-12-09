@@ -1,4 +1,4 @@
-package com.example.market_api.core.profile.dto.company;
+package com.example.market_api.core.profile.dto.common;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 
 @Getter
-public class CompanyContactConfigurationForm {
+public class ProfileContactConfigurationForm {
 
     @NotEmpty(message = "Informe pelo menos um canal de contato")
     @Valid

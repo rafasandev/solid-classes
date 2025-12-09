@@ -35,5 +35,4 @@ public class IndividualProfile extends ProfileEntity {
 
     @OneToMany(mappedBy = "customer", orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Order> orders;
-
 }
