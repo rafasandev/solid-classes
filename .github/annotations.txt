@@ -69,67 +69,70 @@ ANOTAÇÕES GERAIS
 - O pedido passa por várias etapas de status:
     - PENDENTE, // Pedido Gerado
         - O pedido é criado com esse status, aguardando confirmação do vendedor para prosseguir
+    
+    - PEDIDO_CANCELADO, // Pedido cancelado enquanto está pendente (Sem penalização)
+        - O pedido pode ser cancelado pelo vendedor ou comprador nessa etapa, antes de ser pago ou estar pronto para a retirada.
+        - O pedido de cancelamento pode ser feito por meio de contato externo (chat, email, telefone) e o vendedor pode atualizar o status para PEDIDO_CANCELADO
 
     - PROCESSANDO, // Pedido em processamento
         - O vendedor confirmou o recebimento do pedido e está preparando-o ou separando itens para retirada
-
-    - CANCELADO, // Pedido cancelado
-        - O pedido só pode ser cancelado nessa etapa, antes de ser pago ou estar pronto para a retirada.
-        - Pode ser cancelado pelo comprador ? Ainda não sei. É melhor permitir apenas o vendedor cancelar nessa etapa, para evitar confusão.
-        - O pedido de cancelamento pode ser feito por meio de contato externo (chat, email, telefone) e o vendedor pode atualizar o status para CANCELADO
+    
+    - CANCELADO_PROCESSANDO, // Pedido cancelado durante o processamento (Penalização de 1 ponto)
+        - O pedido pode ser cancelado pelo vendedor nessa etapa, antes de estar pronto para a retirada.
+        - O pedido de cancelamento pode ser feito por meio de contato externo (chat, email, telefone) e o vendedor pode atualizar o status para CANCELADO_PROCESSANDO
 
     - PRONTO_RETIRADA, // Aguardando o cliente buscar
         - O pedido está pronto para ser retirado pelo cliente no local do vendedor
         - O cliente deve retirar o pedido dentro do prazo estabelecido pelo vendedor
         - Se o cliente não retirar o pedido dentro do prazo, o status muda para EXPIRADO
 
+    - CANCELADO_RETIRADA, // Pedido cancelado quando estava pronto para retirada antes de expirar (Penalização de 1 ponto)
+        - O pedido pode ser cancelado pelo vendedor nessa etapa, antes de expirar.
+        - O pedido de cancelamento pode ser feito por meio de contato externo (chat, email, telefone) e o vendedor pode atualizar o status para CANCELADO_RETIRADA
+
     - COMPLETADO, // Produto entregue
-        - O client retirou o pedido e o vendedor atualizou o status para COMPLETADO
+        - O cliente informou o código de compra e retirou o pedido e o vendedor atualizou o status para COMPLETADO
         - O pedido é finalizado e o valor é creditado na conta do vendedor
 
-        - Para o endpoint de confirmação que o vendedor irá enviar, são necessários:
-            - ID do pedido
-            - ID do cliente
-            - O status anterior do pedido (deve ser PRONTO_RETIRADA)
-            - Código de confirmação (informado pelo comprador fisicamente no local)
+    - EXPIRADO, // Pedido expirado (Penalização de 2 pontos)
+        - O pedido não foi retirado pelo cliente dentro do prazo estabelecido pelo vendedor
+        - O pedido ainda pode permanecer nesse status pelo tempo de escolha do vendedor
 
-        - Deve ser verificado:
-            - Se o ID do pedido existe
-            - Se o ID do cliente existe
-            - Se o pedido pertence ao cliente informado
-            - Se o status informado é COMPLETADO
-            - Se o pedido está no status PRONTO_RETIRADA
-            - Se o código de confirmação informado bate com o código do pedido
-            - Se o pedido pertence ao vendedor que está fazendo a confirmação
-            - Se todas as verificações passarem, o status do pedido é atualizado para COMPLETADO
-        
-
-    - EXPIRADO, // Pedido expirado
-        - O pedido não foi retirado pelo client dentro do prazo estabelecido pelo vendedor
-        - O pedido ainda pode permanecer nesse status por 24 horas, para o caso do cliente ir retirar
-        - Se o comprador não retirar dentro dessas 24 horas, o status muda para SEM_RETIRADA
-
-    - AGUARDANDO_CONFIRMACAO, // Aguardando confirmação do vendedor
-        - O cliente retirou o pedido, mas o vendedor ainda não confirmou a retirada
-        - O cliente faz a mudança de status se estiver como PRONTO_RETIRADA para AGUARDANDO_CONFIRMACAO
-        - O cliente deve informar novamente o código de confirmação para o vendedor não ser enganado
-
-    - SEM_RETIRADA // Pedido não retirado pelo cliente
-        - O pedido não foi retirado pelo cliente dentro do prazo de 24 horas após o status EXPIRADO
-        - O vendedor não recebe o valor do pedido
-        - O cliente que não retirou o pedido será penalizado caso atinja um número limite de pedidos não retirados (DESENVOLVIMENTO PENDENTE)
-        - Caso o cliente busque o pedido outro dia, o vendedor pode atualizar o status para COMPLETADO_EXPIRADO manualmente
-        - O valor é creditado normalmente
-
-    - COMPLETADO_EXPIRADO // Pedido completado após expiração
+    - COMPLETADO_EXPIRADO // Pedido completado após expiração (Mantém penalização de 2 pontos)
         - O cliente retirou o pedido após o status EXPIRADO
         - O vendedor atualiza o status manualmente para COMPLETADO_EXPIRADO
         - O valor é creditado normalmente na conta do vendedor
-        - Um admin pode auditar a penalização do cliente, se necessário (DESENVOLVIMENTO PENDENTE)
+        - Um admin pode auditar a penalização do cliente, se necessário
+
+    - SEM_RETIRADA // Pedido não retirado pelo cliente (Penalização de 3 pontos)
+        - O pedido não foi retirado pelo cliente dentro do prazo estabelecido pelo vendedor (Não houve tentativa de contato ou o produto ficou retido por muito tempo)
+        - O pedido não pode mais ser completado e fica nesse status permanentemente
+    
 - Os status não devem estar todos disponíveis de uma vez
 - Cada status deve ser alterado conforme o fluxo definido acima
 - Maneiras de implementar esse fluxo de forma bem estruturada:
-    - Usar o padrão State Machine (Máquina de Estados) para gerenciar as transições de status
     - Criar um serviço dedicado para gerenciar as mudanças de status, encapsulando a lógica de negócio
     - Validar todas as condições necessárias antes de permitir a mudança de status
-    - O service deve ser responsável por listar os status possíveis para o pedido, baseado no status atual e verificações secundárias
+    - O service deve ser responsável por listar e alterar os status possíveis para o pedido, baseado no status atual e verificações secundárias
+        - RECUPERAÇÃO DE STATUS PERMITIDOS:
+            - Todos os status tem uma lista de status permitidos para mudança
+            - Cada status pode ter verificações adicionais para permitir a mudança
+            - Verificações adicionais por status:
+                - COMPLETADO:
+                    - Verificar código de confirmação
+                    - Atualizar saldo do vendedor
+                - EXPIRADO:
+                    - Verificar se o prazo de retirada expirou
+                - EXPIRADO_COMPLETADO:
+                    - Verificar código de confirmação
+
+        - ALTERAÇÃO DE STATUS:
+            - Receber o ID do pedido
+            - Receber o ID do cliente do pedido (sempre verificar se o cliente é o dono do pedido)
+            - Receber o status desejado para mudança
+            - Validar se o pedido pertence ao cliente
+            - Validar se a mudança de status é permitida
+            - Executar verificações adicionais conforme o status desejado
+            - Atualizar o status do pedido
+            - Persistir as mudanças no banco de dados
+    

@@ -53,7 +53,7 @@ public class Order extends AuditableEntity {
     private List<OrderItem> orderItems;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = true)
     private IndividualProfile customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
