@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.market_api.core.order.dto.OrderPickupCodeForm;
 import com.example.market_api.core.order.dto.OrderResponseDto;
+import com.example.market_api.core.order.dto.OrderStatusChangeForm;
 import com.example.market_api.core.order.service.use_case.CheckoutOrderUseCase;
-import com.example.market_api.core.order.service.use_case.SetOrderCompletedUseCase;
+import com.example.market_api.core.order.service.use_case.OrderStatusChangeSpecificUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 
     private final CheckoutOrderUseCase checkoutService;
-    private final SetOrderCompletedUseCase setOrderCompletedUseCase;
+    private final OrderStatusChangeSpecificUseCase setOrderStatusSpecific;
 
     @PostMapping("/checkout")
     @PreAuthorize("hasRole('INDIVIDUAL')")
@@ -33,10 +34,15 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orders);
     }
 
-    @PutMapping("/status/completed")
-    public ResponseEntity<OrderResponseDto> updateOrderStatusWithCode(@RequestBody OrderPickupCodeForm pickupCodeForm)
-    {   
-        OrderResponseDto updatedOrder = setOrderCompletedUseCase.updateOrderStatusWithCode(pickupCodeForm);
+    @PutMapping("/status")
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(@RequestBody OrderStatusChangeForm statusChangeForm) {
+        OrderResponseDto updatedOrder = setOrderStatusSpecific.updateOrderStatusGeneral(statusChangeForm);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
+    }
+
+    @PutMapping("/status/checkout")
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(@RequestBody OrderPickupCodeForm statusChangeForm) {
+        OrderResponseDto updatedOrder = setOrderStatusSpecific.updateOrderStatusPickup(statusChangeForm);
         return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
     }
 
