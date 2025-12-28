@@ -17,6 +17,7 @@ import com.example.market_api.core.order.dto.OrderStatusChangeForm;
 import com.example.market_api.core.order.service.use_case.CheckoutOrderUseCase;
 import com.example.market_api.core.order.service.use_case.OrderStatusChangeSpecificUseCase;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -33,15 +34,17 @@ public class OrderController {
         List<OrderResponseDto> orders = checkoutService.checkout();
         return ResponseEntity.status(HttpStatus.CREATED).body(orders);
     }
-
+    
+    @PreAuthorize("hasRole('COMPANY')")
     @PutMapping("/status")
-    public ResponseEntity<OrderResponseDto> updateOrderStatus(@RequestBody OrderStatusChangeForm statusChangeForm) {
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(@RequestBody @Valid OrderStatusChangeForm statusChangeForm) {
         OrderResponseDto updatedOrder = setOrderStatusSpecific.updateOrderStatusGeneral(statusChangeForm);
         return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
     }
-
+    
+    @PreAuthorize("hasRole('COMPANY')")
     @PutMapping("/status/checkout")
-    public ResponseEntity<OrderResponseDto> updateOrderStatus(@RequestBody OrderPickupCodeForm statusChangeForm) {
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(@RequestBody @Valid OrderPickupCodeForm statusChangeForm) {
         OrderResponseDto updatedOrder = setOrderStatusSpecific.updateOrderStatusPickup(statusChangeForm);
         return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
     }
