@@ -33,10 +33,8 @@ public class GetProductVariationUseCase {
         List<ProductVariation> variations = productVariationService.findAll();
         List<ProductVariationResponseDto> variationsDto = variations.stream()
                 .map(variation -> {
-                    Product product = productService.getById(variation.getId());
-                    VariationCategoryEntity variationCategory = getVariationCategoryByIdAndType(
-                            product.getCategoryId(),
-                            variation.getVariationCategoryType());
+                Product product = productService.getById(variation.getProductId());
+                VariationCategoryEntity variationCategory = getVariationCategory(variation);
                     return productVariationMapper.toResponseDto(variation, variationCategory, product);
                 })
                 .toList();
@@ -47,10 +45,8 @@ public class GetProductVariationUseCase {
     @Transactional(readOnly = true)
     public ProductVariationResponseDto getVariationById(UUID id) {
         ProductVariation variation = productVariationService.getById(id);
-        Product product = productService.getById(variation.getId());
-        VariationCategoryEntity variationCategory = getVariationCategoryByIdAndType(
-                product.getCategoryId(),
-                variation.getVariationCategoryType());
+        Product product = productService.getById(variation.getProductId());
+        VariationCategoryEntity variationCategory = getVariationCategory(variation);
         return productVariationMapper.toResponseDto(variation, variationCategory, product);
     }
 
@@ -60,9 +56,7 @@ public class GetProductVariationUseCase {
         Product product = productService.getById(productId);
         List<ProductVariationResponseDto> variationsDto = variations.stream()
                 .map(variation -> {
-                    VariationCategoryEntity variationCategory = getVariationCategoryByIdAndType(
-                            product.getCategoryId(),
-                            variation.getVariationCategoryType());
+                    VariationCategoryEntity variationCategory = getVariationCategory(variation);
                     return productVariationMapper.toResponseDto(variation, variationCategory, product);
                 })
                 .toList();
@@ -70,14 +64,14 @@ public class GetProductVariationUseCase {
         return variationsDto;
     }
 
-    private VariationCategoryEntity getVariationCategoryByIdAndType(UUID categoryId, VariationCategoryType type) {
-        switch (type) {
-            case SELLER:
-                return variationCategorySellerService.getById(categoryId);
-            case GLOBAL:
-                return variationCategoryGlobalService.getById(categoryId);
-            default:
-                throw new IllegalArgumentException("Tipo de categoria de variação desconhecido: " + type);
+    private VariationCategoryEntity getVariationCategory(ProductVariation variation) {
+        UUID categoryId = variation.getVariationCategoryId();
+        VariationCategoryType type = variation.getVariationCategoryType();
+
+        if (type == VariationCategoryType.SELLER) {
+            return variationCategorySellerService.getById(categoryId);
         }
+
+        return variationCategoryGlobalService.getById(categoryId);
     }
 }

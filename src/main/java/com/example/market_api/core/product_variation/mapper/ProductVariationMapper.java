@@ -6,7 +6,9 @@ import com.example.market_api.core.product.model.Product;
 import com.example.market_api.core.product_variation.dto.ProductVariationForm;
 import com.example.market_api.core.product_variation.dto.ProductVariationResponseDto;
 import com.example.market_api.core.product_variation.model.ProductVariation;
+import com.example.market_api.core.product_variation.model.enums.VariationCategoryType;
 import com.example.market_api.core.variation_category.model.VariationCategoryEntity;
+import com.example.market_api.core.variation_category.model.variation_seller.VariationCategorySeller;
 
 @Component
 public class ProductVariationMapper {
@@ -18,6 +20,7 @@ public class ProductVariationMapper {
                 .valueType(variationForm.getValueType())
                 .variationAdditionalPrice(variationForm.getVariationAdditionalPrice())
                 .variationCategoryId(category.getId())
+            .variationCategoryType(resolveCategoryType(category))
                 .productId(variationForm.getProductId())
                 .stockQuantity(variationForm.getStockQuantity())
                 .build();
@@ -35,6 +38,13 @@ public class ProductVariationMapper {
                 .variationAdditionalPrice(variation.getVariationAdditionalPrice())
                 .variationCategoryName(variationCategory.getName())
                 .variationProductName(product.getProductName())
+                .stockQuantity(variation.getStockQuantity())
                 .build();
+    }
+
+    private VariationCategoryType resolveCategoryType(VariationCategoryEntity category) {
+        return (category instanceof VariationCategorySeller)
+                ? VariationCategoryType.SELLER
+                : VariationCategoryType.GLOBAL;
     }
 }

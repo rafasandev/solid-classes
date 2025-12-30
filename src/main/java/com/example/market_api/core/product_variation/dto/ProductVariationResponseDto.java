@@ -15,4 +15,5 @@ public class ProductVariationResponseDto {
     private BigDecimal variationPrice;
     private String variationCategoryName;
     private String variationProductName;
+    private int stockQuantity;
 }

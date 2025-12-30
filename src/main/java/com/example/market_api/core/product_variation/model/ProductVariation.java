@@ -53,6 +53,13 @@ public class ProductVariation extends AuditableMongoEntity {
         this.stockQuantity += quantity;
     }
 
+    public void updateStockQuantity(int newQuantity) {
+        if (newQuantity < 0) {
+            throw new BusinessRuleException("Quantidade de estoque não pode ser negativa");
+        }
+        this.stockQuantity = newQuantity;
+    }
+
     private void validQuantityPositive(int quantity) {
         if (quantity < 0)
             throw new BusinessRuleException("Quantidade de retirada não pode ser negativa");

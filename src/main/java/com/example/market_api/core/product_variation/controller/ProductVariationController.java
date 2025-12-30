@@ -9,14 +9,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.market_api.core.product_variation.dto.ProductVariationForm;
 import com.example.market_api.core.product_variation.dto.ProductVariationResponseDto;
+import com.example.market_api.core.product_variation.dto.ProductVariationStockUpdateForm;
 import com.example.market_api.core.product_variation.service.GetProductVariationUseCase;
 import com.example.market_api.core.product_variation.service.RegisterProductVariationUseCase;
+import com.example.market_api.core.product_variation.service.UpdateProductVariationStockUseCase;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class ProductVariationController {
 
     private final RegisterProductVariationUseCase registerProductVariationUseCase;
     private final GetProductVariationUseCase getProductVariationUseCase;
+    private final UpdateProductVariationStockUseCase updateProductVariationStockUseCase;
 
     @PostMapping
     @PreAuthorize("hasRole('COMPANY')")
@@ -39,6 +43,16 @@ public class ProductVariationController {
     @GetMapping
     public ResponseEntity<List<ProductVariationResponseDto>> getAllVariations() {
         return ResponseEntity.ok(getProductVariationUseCase.getAllVariations());
+    }
+
+    @PutMapping("/{variationId}/stock")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<ProductVariationResponseDto> updateVariationStock(
+            @PathVariable UUID variationId,
+            @Valid @RequestBody ProductVariationStockUpdateForm stockUpdateForm) {
+        ProductVariationResponseDto responseDto = updateProductVariationStockUseCase
+                .updateVariationStock(variationId, stockUpdateForm);
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/{id}")
