@@ -24,7 +24,7 @@ public class ServiceOfferingController {
     private final RegisterServiceOfferingUseCase serviceOfferingService;
     
     @PostMapping
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceOfferingResponseDto> createService(@Valid @RequestBody ServiceOfferingForm serviceForm) {
         ServiceOfferingResponseDto service = serviceOfferingService.registerServiceOffering(serviceForm);
         return ResponseEntity.status(HttpStatus.CREATED).body(service);

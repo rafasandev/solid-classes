@@ -1,5 +1,6 @@
 package com.example.market_api.core.cart_item.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/cart-items")
@@ -23,7 +26,8 @@ public class CartItemController {
     private final RegisterCartItemUseCase registerCartItemUseCase;
 
     @PostMapping
-    public ResponseEntity<CartItemResponseDto> createCartItem(@RequestBody CartItemForm cartItemForm) {
+    @PreAuthorize("hasRole('INDIVIDUAL')")
+    public ResponseEntity<CartItemResponseDto> createCartItem(@Valid @RequestBody CartItemForm cartItemForm) {
         CartItemResponseDto newCartitem = registerCartItemUseCase.registerCartItem(cartItemForm);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCartitem);
     }

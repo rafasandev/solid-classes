@@ -187,6 +187,7 @@
 
   ### ADMINS
   - Criam categorias globais para produtos e serviços (`Category`, `ServiceOffering`).
+  - O endpoint `/service` é exclusivo de administradores autenticados (`@PreAuthorize("hasRole('ADMIN')")`).
   - Mantêm as categorias de variação globais (`VariationCategoryGlobal`).
   - Definem os tipos de contato (`ContactType`).
   - Cadastram os meios de pagamento disponíveis (`PaymentMethod`).
@@ -505,6 +506,7 @@
   - Contains `itemQuantity` and `status` (ReservationStatus enum)
   - Has unique constraint per cart + product variation combination
   - Uses indexed columns for performance (`cart_id`, `product_variation_id`)
+  - O endpoint `/cart-items` aceita apenas perfis individuais autenticados (`@PreAuthorize("hasRole('INDIVIDUAL')")`) e sempre aplica `@Valid` no payload antes de delegar ao caso de uso.
 
   ### 📦 Inventory Management
   - **Source of Truth:** MongoDB (`Product.stockQuantity`).
@@ -530,6 +532,7 @@
     5. Credita imediatamente o saldo do vendedor (`CompanyProfile.balance += orderTotal`).
   - `OrderStatus` inclui `FINALIZADO_PRESENCIAL`. Esse status não participa do fluxo padrão de mudança de status; carrinhos presenciais não permitem cancelamentos ou expiração porque a venda termina no ato.
   - Controllers e UseCases de presencial **sempre usam Pageable** para listagens e validam user ownership via `UserService.getLoggedInUser()` + `CompanyProfileService.validateIsActive`.
+  - Todas as rotas `/presencial-carts` e `/presencial-cart-items` são protegidas com `@PreAuthorize("hasRole('COMPANY')")`, garantindo que somente vendedores autenticados executem este fluxo.
 
   ### 🧬 Profile Inheritance & Entity Relationships
 
