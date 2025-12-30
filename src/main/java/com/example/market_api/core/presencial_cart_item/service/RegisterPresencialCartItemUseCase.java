@@ -63,13 +63,12 @@ public class RegisterPresencialCartItemUseCase {
                     presencialCartItemForm.getItemQuantity());
         } else {
             presencialCartItem.setQuantity(presencialCartItemForm.getItemQuantity());
-            presencialCartItem.updateSnapshots(product.getBasePrice(), productVariation.getVariationAdditionalPrice());
         }
 
         PresencialCartItem savedItem = presencialCartItemService.save(presencialCartItem);
         presencialCart.addItem(savedItem);
 
-        return presencialCartItemMapper.toResponseDto(savedItem);
+        return presencialCartItemMapper.toResponseDto(savedItem, product, productVariation);
     }
 
     private void validateCartOpen(PresencialCart presencialCart) {

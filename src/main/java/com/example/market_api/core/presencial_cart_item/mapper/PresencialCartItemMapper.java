@@ -1,5 +1,7 @@
 package com.example.market_api.core.presencial_cart_item.mapper;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Component;
 
 import com.example.market_api.core.presencial_cart.model.PresencialCart;
@@ -16,29 +18,34 @@ public class PresencialCartItemMapper {
             Product product,
             ProductVariation variation,
             int quantity) {
-        PresencialCartItem presencialCartItem = PresencialCartItem.builder()
+        return PresencialCartItem.builder()
                 .itemQuantity(quantity)
                 .productVariationId(variation.getId())
                 .productId(product.getId())
-                .productName(product.getProductName())
-                .productVariationValue(variation.getVariationValue())
                 .presencialCart(presencialCart)
                 .build();
-
-        presencialCartItem.updateSnapshots(product.getBasePrice(), variation.getVariationAdditionalPrice());
-        return presencialCartItem;
     }
 
-    public PresencialCartItemResponseDto toResponseDto(PresencialCartItem presencialCartItem) {
+    public PresencialCartItemResponseDto toResponseDto(
+            PresencialCartItem presencialCartItem,
+            Product product,
+            ProductVariation variation) {
+        BigDecimal unitPrice = calculateUnitPrice(product, variation);
+        BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(presencialCartItem.getItemQuantity()));
+
         return PresencialCartItemResponseDto.builder()
                 .id(presencialCartItem.getId())
-                .productId(presencialCartItem.getProductId())
-                .productVariationId(presencialCartItem.getProductVariationId())
-                .productName(presencialCartItem.getProductName())
-                .productVariationValue(presencialCartItem.getProductVariationValue())
-                .unitPrice(presencialCartItem.getFinalUnitPriceSnapshot())
-                .subtotal(presencialCartItem.getSubtotalSnapshot())
+                .productId(product.getId())
+                .productVariationId(variation.getId())
+                .productName(product.getProductName())
+                .productVariationValue(variation.getVariationValue())
+                .unitPrice(unitPrice)
+                .subtotal(subtotal)
                 .quantity(presencialCartItem.getItemQuantity())
                 .build();
+    }
+
+    private BigDecimal calculateUnitPrice(Product product, ProductVariation variation) {
+        return product.getBasePrice().add(variation.getVariationAdditionalPrice());
     }
 }

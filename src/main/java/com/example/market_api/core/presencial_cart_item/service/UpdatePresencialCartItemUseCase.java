@@ -48,10 +48,9 @@ public class UpdatePresencialCartItemUseCase {
         validateStock(product, variation, updateForm.getItemQuantity());
 
         item.setQuantity(updateForm.getItemQuantity());
-        item.updateSnapshots(product.getBasePrice(), variation.getVariationAdditionalPrice());
 
         PresencialCartItem savedItem = presencialCartItemService.save(item);
-        return presencialCartItemMapper.toResponseDto(savedItem);
+        return presencialCartItemMapper.toResponseDto(savedItem, product, variation);
     }
 
     private void validateOwnership(PresencialCartItem item, CompanyProfile company) {

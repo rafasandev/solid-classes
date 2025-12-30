@@ -1,6 +1,5 @@
 package com.example.market_api.core.presencial_cart_item.model;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.example.market_api.common.base.AuditableEntity;
@@ -41,24 +40,6 @@ public class PresencialCartItem extends AuditableEntity {
     @Column(nullable = false)
     private UUID productId;
 
-    @Column(nullable = false, length = 255)
-    private String productName;
-
-    @Column(length = 255)
-    private String productVariationValue;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal productBasePriceSnapshot;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal variationAdditionalPriceSnapshot;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal finalUnitPriceSnapshot;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal subtotalSnapshot;
-
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "presencial_cart_id", nullable = false)
@@ -67,20 +48,6 @@ public class PresencialCartItem extends AuditableEntity {
     public void setQuantity(int quantity) {
         if (quantity > 0) {
             this.itemQuantity = quantity;
-            recalculateSubtotal();
-        }
-    }
-
-    public void updateSnapshots(BigDecimal productBasePrice, BigDecimal variationAdditionalPrice) {
-        this.productBasePriceSnapshot = productBasePrice;
-        this.variationAdditionalPriceSnapshot = variationAdditionalPrice;
-        this.finalUnitPriceSnapshot = productBasePrice.add(variationAdditionalPrice);
-        recalculateSubtotal();
-    }
-
-    public void recalculateSubtotal() {
-        if (this.finalUnitPriceSnapshot != null) {
-            this.subtotalSnapshot = this.finalUnitPriceSnapshot.multiply(BigDecimal.valueOf(this.itemQuantity));
         }
     }
 }
