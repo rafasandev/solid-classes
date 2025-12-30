@@ -10,6 +10,8 @@ import com.example.market_api.core.order.model.Order;
 import com.example.market_api.core.order_item.mapper.OrderItemMapper;
 import com.example.market_api.core.order_item.model.OrderItem;
 import com.example.market_api.core.order_item.ports.OrderItemPort;
+import com.example.market_api.core.presencial_cart_item.model.PresencialCartItem;
+import com.example.market_api.core.product.model.Product;
 import com.example.market_api.core.product_variation.model.ProductVariation;
 
 import lombok.RequiredArgsConstructor;
@@ -33,8 +35,13 @@ public class OrderItemService {
         return orderItemPort.findAll();
     }
 
-    public OrderItem createOrderItemSnapshot(CartItem cartItem, Order order, ProductVariation variation) {
-        OrderItem orderItem = orderItemMapper.toOrderItemSnapshot(cartItem, order, variation);
+    public OrderItem createOrderItemSnapshot(CartItem cartItem, Order order, ProductVariation variation, Product product) {
+        OrderItem orderItem = orderItemMapper.toOrderItemSnapshot(cartItem, order, variation, product);
+        return save(orderItem);
+    }
+
+    public OrderItem createOrderItemSnapshot(PresencialCartItem presencialCartItem, Order order) {
+        OrderItem orderItem = orderItemMapper.toOrderItemSnapshot(presencialCartItem, order);
         return save(orderItem);
     }
 }

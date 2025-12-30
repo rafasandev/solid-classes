@@ -40,6 +40,7 @@ public class Order extends AuditableEntity {
     @Column(nullable = false)
     private OrderStatus status;
 
+    @Setter
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal orderTotal;
 

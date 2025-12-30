@@ -1,6 +1,5 @@
 package com.example.market_api.core.order.service.use_case;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import com.example.market_api.core.order.mapper.OrderMapper;
 import com.example.market_api.core.order.model.Order;
 import com.example.market_api.core.order.model.enums.OrderStatus;
 import com.example.market_api.core.order.service.OrderService;
-import com.example.market_api.core.order.service.support.OrderCalculator;
 import com.example.market_api.core.order.service.support.PickupCodeGenerator;
 import com.example.market_api.core.order.service.support.StockValidator;
 import com.example.market_api.core.order_item.model.OrderItem;
@@ -52,7 +50,6 @@ public class CheckoutOrderUseCase {
 
     private final StockValidator stockValidator;
     private final PickupCodeGenerator pickupCodeGenerator;
-    private final OrderCalculator orderCalculator;
 
     private final OrderMapper orderMapper;
 
@@ -93,12 +90,9 @@ public class CheckoutOrderUseCase {
             CompanyProfile seller = entry.getKey();
             List<CartItem> storeItems = entry.getValue();
 
-            BigDecimal orderTotal = orderCalculator.calculateOrderTotal(storeItems);
-
             Order order = Order.builder()
                     .pickUpcode(pickupCodeGenerator.generateUniqueCode()) // Componente dedicado (SRP)
                     .status(OrderStatus.PENDENTE)
-                    .orderTotal(orderTotal)
                     .isPaid(false)
                     .customer(cart.getProfile())
                     .company(seller)
@@ -106,6 +100,7 @@ public class CheckoutOrderUseCase {
 
             List<OrderItem> orderItems = processOrderItems(storeItems, order);
             order.setOrderItems(orderItems);
+            order.setOrderTotal(orderService.calculateOrderTotal(orderItems));
             savedOrders.add(orderService.save(order));
         }
 
@@ -121,7 +116,7 @@ public class CheckoutOrderUseCase {
                     variation.decreaseVariationStock(cartItem.getItemQuantity());
                     productVariationService.save(variation);
                     productService.save(product);
-                    OrderItem orderItem = orderItemService.createOrderItemSnapshot(cartItem, order, variation);
+                    OrderItem orderItem = orderItemService.createOrderItemSnapshot(cartItem, order, variation, product);
                     return orderItem;
                 })
                 .toList();

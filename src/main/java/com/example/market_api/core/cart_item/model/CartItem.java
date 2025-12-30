@@ -1,6 +1,5 @@
 package com.example.market_api.core.cart_item.model;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.example.market_api.common.base.AuditableEntity;
@@ -8,8 +7,6 @@ import com.example.market_api.core.cart.model.Cart;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -22,9 +19,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
+// Indexação para melhorar performance em consultas por cart_id e product_variation_id
 @Table(name = "cart_items",
-        // Unique per cart + specific product variation (allows multiple variations of
-        // same product)
         uniqueConstraints = @UniqueConstraint(columnNames = { "cart_id", "product_variation_id" }), indexes = {
                 @Index(name = "idx_cart_item_cart", columnList = "cart_id"),
                 @Index(name = "idx_cart_item_product_variation", columnList = "product_variation_id")
@@ -34,15 +30,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class CartItem extends AuditableEntity {
 
-    private UUID productVariationId;
-    private UUID productId;
-    private String productName;
-
     @Column(nullable = false)
     private int itemQuantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal unitPriceSnapshot;
+    private UUID productVariationId;
+    private UUID productId;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,10 +57,6 @@ public class CartItem extends AuditableEntity {
         if (quantity > 0) {
             this.itemQuantity = quantity;
         }
-    }
-
-    public BigDecimal calculateSubtotal() {
-        return this.unitPriceSnapshot.multiply(BigDecimal.valueOf(this.itemQuantity));
     }
 
 }

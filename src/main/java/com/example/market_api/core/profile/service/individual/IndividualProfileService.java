@@ -22,6 +22,10 @@ public class IndividualProfileService {
         return individualProfilePort.getById(profileId);
     }
 
+    public IndividualProfile getByCpf(String cpf) {
+        return individualProfilePort.getByCpf(cpf);
+    }
+
     public IndividualProfile save(IndividualProfile profile) {
         User user = profile.getUser();
         user.setStatus(profile.individualIsAbleToBeActive());

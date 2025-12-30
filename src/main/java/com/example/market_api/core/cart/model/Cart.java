@@ -1,6 +1,5 @@
 package com.example.market_api.core.cart.model;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import com.example.market_api.common.base.AuditableEntity;
@@ -45,14 +44,6 @@ public class Cart extends AuditableEntity {
             this.items.remove(cartItem);
             cartItem.setCart(null);
         }
-    }
-
-    public BigDecimal calculateTotal() {
-        return this.items == null
-                ? BigDecimal.ZERO
-                : this.items.stream()
-                        .map(CartItem::calculateSubtotal)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public int getTotalItems() {

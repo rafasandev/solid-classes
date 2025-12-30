@@ -17,9 +17,7 @@ public class CartItemMapper {
         CartItem newItem = CartItem.builder()
                 .productVariationId(cartItemForm.getProductVariationId())
                 .productId(product.getId())
-                .productName(product.getProductName())
                 .itemQuantity(cartItemForm.getItemQuantity())
-                .unitPriceSnapshot(product.getBasePrice())
                 .cart(cart)
                 .build();
         return newItem;
@@ -27,7 +25,6 @@ public class CartItemMapper {
 
     public CartItemResponseDto toResponseDto(CartItem cartItem, BigDecimal itemPrice) {
         CartItemResponseDto cartItemResponseDto = CartItemResponseDto.builder()
-                .productName(cartItem.getProductName())
                 .productUnitPrice(itemPrice)
                 .productQuantity(cartItem.getItemQuantity())
                 .build();

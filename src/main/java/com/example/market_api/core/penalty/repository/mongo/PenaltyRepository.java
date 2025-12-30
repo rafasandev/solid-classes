@@ -1,4 +1,4 @@
-package com.example.market_api.core.penalty.repository;
+package com.example.market_api.core.penalty.repository.mongo;
 
 import java.util.List;
 import java.util.UUID;

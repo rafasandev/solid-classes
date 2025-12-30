@@ -13,10 +13,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Document(collection = "services")
 @Getter
 @SuperBuilder
 @NoArgsConstructor
-@Document(collection = "services")
 public class ServiceOffering extends AuditableMongoEntity {
 
     @Indexed(unique = true)

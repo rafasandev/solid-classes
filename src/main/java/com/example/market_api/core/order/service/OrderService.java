@@ -1,5 +1,6 @@
 package com.example.market_api.core.order.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.market_api.core.order.model.Order;
 import com.example.market_api.core.order.ports.OrderPort;
+import com.example.market_api.core.order_item.model.OrderItem;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,5 +36,11 @@ public class OrderService {
 
     public boolean existsByPickupCode(String pickupCode) {
         return orderPort.existsByPickUpcode(pickupCode);
+    }
+
+    public BigDecimal calculateOrderTotal(List<OrderItem> orderItems) {
+        return orderItems.stream()
+            .map(OrderItem::getSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

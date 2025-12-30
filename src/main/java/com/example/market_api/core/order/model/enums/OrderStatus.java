@@ -11,4 +11,5 @@ public enum OrderStatus {
     EXPIRADO, // Pedido expirado (Penalização de 2 pontos)
     COMPLETADO_EXPIRADO, // Produto entregue após expiração (Mantém penalização de 2 pontos)
     SEM_RETIRADA, // Pedido não retirado pelo cliente (Penalização de 3 pontos)
+    FINALIZADO_PRESENCIAL // Venda presencial concluída imediatamente
 }

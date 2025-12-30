@@ -90,6 +90,8 @@ public class OrderStatusChangeUseCase {
                 break;
             case COMPLETADO_EXPIRADO:
                 break;
+            case FINALIZADO_PRESENCIAL:
+                break;
             default:
                 throw new BusinessRuleException("Status de pedido inválido");
         }

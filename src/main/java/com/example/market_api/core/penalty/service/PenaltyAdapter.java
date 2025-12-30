@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.market_api.common.base.NamedMongoAdapter;
 import com.example.market_api.core.penalty.model.Penalty;
 import com.example.market_api.core.penalty.ports.PenaltyPort;
-import com.example.market_api.core.penalty.repository.PenaltyRepository;
+import com.example.market_api.core.penalty.repository.mongo.PenaltyRepository;
 
 @Component
 public class PenaltyAdapter extends NamedMongoAdapter<Penalty, PenaltyRepository> implements PenaltyPort {
