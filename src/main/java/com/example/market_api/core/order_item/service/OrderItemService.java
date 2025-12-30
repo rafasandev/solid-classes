@@ -40,8 +40,12 @@ public class OrderItemService {
         return save(orderItem);
     }
 
-    public OrderItem createOrderItemSnapshot(PresencialCartItem presencialCartItem, Order order) {
-        OrderItem orderItem = orderItemMapper.toOrderItemSnapshot(presencialCartItem, order);
+    public OrderItem createOrderItemSnapshot(
+            PresencialCartItem presencialCartItem,
+            Order order,
+            Product product,
+            ProductVariation variation) {
+        OrderItem orderItem = orderItemMapper.toOrderItemSnapshot(presencialCartItem, order, product, variation);
         return save(orderItem);
     }
 }

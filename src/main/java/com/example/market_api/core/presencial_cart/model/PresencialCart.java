@@ -1,6 +1,5 @@
 package com.example.market_api.core.presencial_cart.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,12 +84,4 @@ public class PresencialCart extends AuditableEntity {
         this.order = order;
     }
 
-    public BigDecimal calculateItemsTotal() {
-        if (items == null || items.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        return items.stream()
-                .map(PresencialCartItem::getSubtotalSnapshot)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

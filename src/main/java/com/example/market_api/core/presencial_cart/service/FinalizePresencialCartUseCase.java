@@ -105,7 +105,7 @@ public class FinalizePresencialCartUseCase {
         productVariationService.save(variation);
         productService.save(product);
 
-        return orderItemService.createOrderItemSnapshot(item, order);
+        return orderItemService.createOrderItemSnapshot(item, order, product, variation);
     }
 
     private void validateOwnership(Product product, CompanyProfile seller) {

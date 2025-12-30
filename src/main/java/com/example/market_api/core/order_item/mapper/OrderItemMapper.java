@@ -30,17 +30,22 @@ public class OrderItemMapper {
                 .build();
     }
 
-    public OrderItem toOrderItemSnapshot(PresencialCartItem presencialCartItem, Order order) {
+    public OrderItem toOrderItemSnapshot(
+            PresencialCartItem presencialCartItem,
+            Order order,
+            Product product,
+            ProductVariation variation) {
+        BigDecimal finalUnitPrice = calculateFinalUnitPriceSnapshot(variation, product);
         return OrderItem.builder()
                 .productId(presencialCartItem.getProductId())
                 .productVariationId(presencialCartItem.getProductVariationId())
-                .productName(presencialCartItem.getProductName())
-                .productVariationValue(presencialCartItem.getProductVariationValue())
-                .productPrice(presencialCartItem.getProductBasePriceSnapshot())
-                .variationAdditionalPriceSnapshot(presencialCartItem.getVariationAdditionalPriceSnapshot())
-                .finalUnitPriceSnapshot(presencialCartItem.getFinalUnitPriceSnapshot())
+                .productName(product.getProductName())
+                .productVariationValue(variation.getVariationValue())
+                .productPrice(product.getBasePrice())
+                .variationAdditionalPriceSnapshot(variation.getVariationAdditionalPrice())
+                .finalUnitPriceSnapshot(finalUnitPrice)
                 .orderQuantity(presencialCartItem.getItemQuantity())
-                .subtotal(presencialCartItem.getSubtotalSnapshot())
+                .subtotal(finalUnitPrice.multiply(BigDecimal.valueOf(presencialCartItem.getItemQuantity())))
                 .order(order)
                 .build();
     }
