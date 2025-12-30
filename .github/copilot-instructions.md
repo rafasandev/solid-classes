@@ -26,31 +26,18 @@
   PostgreSQL remains responsible for all **critical entities** that require referential integrity, security, or transactional consistency. This data represents the business core and must obey strict rules.
 
   **Entities maintained in PostgreSQL:**
-  - **Users, profiles and authentication (PostgreSQL / JPA):**
-    - `users` — `User` (JPA) (email, password, active, roles, contacts)
-    - `roles` — `Role` (JPA) (enum name, users)
-    - `individual_profiles` — `IndividualProfile` (JPA) (linked `User`, cart)
-    - `company_profiles` — `CompanyProfile` (JPA) (companyName, cnpj, availability, variationCategories, orders, paymentMethods)
 
-  - **Orders and financial operations (PostgreSQL / JPA):**
-    - `orders` — `Order` (JPA) (pickUpcode, status, orderTotal, customer, company, orderItems)
-    - `order_items` — `OrderItem` (JPA) (product snapshot fields, quantity, subtotal, order)
+  - **Users, profiles and authentication:**
+    - `users`, `roles`, `users_roles`, `individual_profiles`, `company_profiles`
 
-  - **Shopping cart (PostgreSQL / JPA):**
-    - `carts` — `Cart` (JPA) (profile, items)
-    - `cart_items` — `CartItem` (JPA) (productId, productVariationId, productName, unitPriceSnapshot, itemQuantity, status, cart)
+  - **Orders and financial operations:**
+    - `orders`, `order_items`
 
-  - **Taxonomy and variation categories (PostgreSQL / JPA):**
-    - `categories` — `Category` (JPA) (categoryName, businessSector, variationCategories)
-    - `variation_categories` — `VariationCategoryEntity` (JPA, inheritance JOINED) with concrete `VariationCategoryGlobal` and `VariationCategorySeller`
+  - **Shopping cart (for now):**
+    - `carts`, `cart_items`
 
-  - **Contact & payment helpers (PostgreSQL / JPA):**
-    - `contact_methods` — `ContactType` (JPA) (channel, baseUrl, validationRegex, iconUrl)
-    - `contact_infos` — `ContactInfo` (JPA) (value, contactType, user(profile))
-    - `payment_methods` — `PaymentMethod` (JPA) (name, iconUrl, companyProfiles)
-
-  - **Other supporting entities (PostgreSQL / JPA):**
-    - `roles`, `payment_methods`, and any audit/lookup tables used by business logic
+  - **Categories and fixed referential structures:**
+    - `categories`, `variation_categories`, `global_variations`, `seller_variations`, `category_global_variations_mapping`
 
   **PostgreSQL is responsible for:**
   - Guaranteeing transaction consistency and atomicity
@@ -64,12 +51,16 @@
 
   **Entities migrated to MongoDB:**
 
-  - **products** — `Product` (MongoDB document) (productName, description, basePrice, companyId, categoryId, totalStock, variations refs, locationReference)
-  - **product_variations** — `ProductVariation` (MongoDB document) (productId, variationCategoryId, value, variationAdditionalPrice, stockQuantity, available)
-  - **services** — `ServiceOffering` (MongoDB document) (serviceName, description, price, durationMinutes, available, companyId)
+  - **products** → main catalog document
+  - **product_variations** → coleção independente no MongoDB; cada documento referencia o `productId` e mantém ciclo de vida próprio
+  - **services** → independent documents
   - **logs and massive data:**
-    - audit and access logs (`AuditLog` / Mongo collection)
-    - action logs, API audit, navigation tracking, events and notifications, metrics and usage history
+    - access logs
+    - action logs
+    - API audit
+    - navigation tracking
+    - events and notifications
+    - metrics and usage history
 
   **These data are perfect for NoSQL because they:**
   - vary greatly between companies and categories
@@ -119,8 +110,6 @@
   - Easy to query variations independently
   - Product maintains a list of variation references for convenience
   - Flexible and expandable structure
-
-  **Note:** ProductVariation is a first-class Mongo document and may be DBRef-linked from `Product` documents; do not create JPA entities for these.
 
   #### 📞 Contact Channels & Accepted Payments (PostgreSQL)
 
@@ -193,6 +182,68 @@
   - ✅ Flexibility for new product types
   - ✅ Horizontal scalability
   - ✅ Efficient log storage
+
+  ## System Flow Overview
+
+  ### ADMINS
+  - Criam categorias globais para produtos e serviços (`Category`, `ServiceOffering`).
+  - Mantêm as categorias de variação globais (`VariationCategoryGlobal`).
+  - Definem os tipos de contato (`ContactType`).
+  - Cadastram os meios de pagamento disponíveis (`PaymentMethod`).
+
+  ### USERS
+  - Registro de vendedores (`CompanyProfile`) e compradores (`IndividualProfile`).
+  - Criação automática de carrinho vazio ao registrar um comprador (`Cart`).
+  - Configuração obrigatória de meios de contato (ambos os perfis) antes da ativação.
+  - Perfis são ativados após completar contatos e, no caso de empresas, disponibilidade/pagamentos.
+
+  ### SELLERS (EMPRESAS)
+  - Configuram horários e métodos de pagamento (`CompanyDailyAvailability`, `PaymentMethod`).
+  - Criam categorias próprias de variação (`VariationCategorySeller`).
+  - Cadastram produtos e suas variações (`Product`, `ProductVariation`).
+  - Controlam estoque das variações (manual + automático).
+  - Registram vendas presenciais (`PresencialCart`, `PresencialCartItem`).
+  - Podem alterar manualmente status de pedidos seguindo o fluxo estabelecido.
+
+  ### BUYERS (INDIVIDUAL)
+  - Adicionam itens ao carrinho (`CartItem`).
+  - Finalizam pedidos on-line (`Order`, `OrderItem`).
+  - Retiram pedidos localmente mediante código de compra.
+  - Mantêm comunicação externa com vendedores para ajustes.
+
+  ### AUTO (Processos automatizados)
+  - Penalidades automáticas conforme evolução de status (`Penalty`).
+  - Ajuste automático de estoque ao finalizar pedidos (online/presencial).
+  - Crédito automático do saldo do vendedor após pedidos concluídos.
+  - Esvaziamento automático do carrinho ao finalizar pedidos.
+  - Validação automática de disponibilidade e estoque antes do checkout.
+  - Verificação automática de status ativo/inativo de perfis.
+  - Alteração de status de produtos ao atualizar estoque.
+  - Geração automática de snapshots de itens em `OrderItem`.
+  - Geração de códigos únicos de confirmação (`PickupCodeGenerator`).
+  - Auditoria automática de criação/atualização via timestamps.
+
+  ## Primary Domain Entities
+
+  - `User`
+  - `IndividualProfile`
+  - `CompanyProfile` (+ `CompanyDailyAvailability`)
+  - `ContactType`
+  - `ContactInfo`
+  - `PaymentMethod`
+  - `VariationCategoryGlobal`
+  - `VariationCategorySeller`
+  - `Product`
+  - `ProductVariation`
+  - `Cart`
+  - `CartItem`
+  - `PresencialCart`
+  - `PresencialCartItem`
+  - `Order`
+  - `OrderItem`
+  - `Category`
+  - `ServiceOffering`
+  - `Penalty`
 
   ### Core Architectural Patterns
 
@@ -345,7 +396,7 @@
   **Responsibility:** High-read volume, flexible schema, product catalog, logs.
   **Persistence:** `MongoRepository`.
   **Documents:**
-  - **Catalog:** `Product` (Document que referencia variações via `@DBRef(lazy = true)` e mantém `totalStock` como cache), `ProductVariation` (coleção independente com `productId` como chave de vínculo)
+  - **Catalog:** `Product` (Document que referencia variações via `@DBRef(lazy = true)` e mantém `totalStockCache`), `ProductVariation` (coleção independente com `productId` como chave de vínculo)
   - **Services:** `ServiceOffering`
   - **Audit:** `Logs`, `AccessHistory`
 
@@ -450,15 +501,35 @@
   ### 🛒 Cart Item Structure
   **CartItem (PostgreSQL):**
   - References products by UUID only (`productId`, `productVariationId`)
-  - Stores snapshot data: `productName`, `unitPriceSnapshot`
+  - Não mantém snapshots; preços/nomenclaturas são lidos em tempo real do Mongo usando `Product` e `ProductVariation`
   - Contains `itemQuantity` and `status` (ReservationStatus enum)
   - Has unique constraint per cart + product variation combination
   - Uses indexed columns for performance (`cart_id`, `product_variation_id`)
 
   ### 📦 Inventory Management
-  - **Source of Truth:** MongoDB (`ProductVariation.stockQuantity`). `Product.totalStock` is an aggregated cache recomputed from its variations.
-  - **Reservation:** When an `Order` is created, decrement variation stock in MongoDB (`ProductVariation.stockQuantity`) and update `Product.totalStock` accordingly.
+  - **Source of Truth:** MongoDB (`Product.stockQuantity`).
+  - **Reservation:** When an `Order` is created, decrement stock in MongoDB.
   - **Validation:** `RegisterCartItemUseCase` must check Mongo stock availability before adding to Postgres Cart.
+  - **Ajuste manual de estoque:** vendedores autenticados podem chamar `PUT /product-variation/{variationId}/stock` (caso de uso `UpdateProductVariationStockUseCase`) para atualizar a quantidade de uma variação. O fluxo valida propriedade, exige número inteiro não negativo, persiste a nova quantidade em Mongo (`ProductVariation`) e salva o `Product` para recalc de `totalStock`.
+  - **Baixa automática:** tanto o checkout online (`CheckoutOrderUseCase`) quanto a venda presencial (`FinalizePresencialCartUseCase`) utilizam `ProductVariation.decreaseVariationStock()` antes de gerar os `OrderItem` snapshots, garantindo que o estoque reflita imediatamente as vendas.
+
+  ### 🟠 Presencial Sales Flow
+  - `PresencialCart` (PostgreSQL) é criado e finalizado a cada venda presencial, sempre vinculado a **um único vendedor** (`CompanyProfile`).
+  - O vendedor pode informar um `IndividualProfile` via CPF ou apenas registrar `buyerName`/`buyerDocument` para compradores genéricos. Se nenhum identificador for enviado, o caso de uso bloqueia a criação.
+  - `PresencialCartItem` guarda apenas `productId`, `productVariationId` e `itemQuantity`. Nome, variação e preços são resolvidos em tempo real via `Product`/`ProductVariation`, mantendo as entidades enxutas. Os snapshots históricos ficam exclusivamente em `OrderItem` durante a finalização.
+  - Itens são únicos por variação dentro do carrinho (`uniqueConstraint` em `presencial_cart_id + product_variation_id`). Criar ou atualizar um item sempre valida: empresa ativa, carrinho não finalizado, produto pertence à empresa e estoque disponível (produto + variação).
+  - O CRUD expõe endpoints dedicados:
+    - `/presencial-carts` → criar/listar/consultar/deletar.
+    - `/presencial-carts/{id}/finalize` → finaliza a venda.
+    - `/presencial-cart-items` → adicionar/consultar/atualizar/remover itens.
+  - Finalização (`FinalizePresencialCartUseCase`):
+    1. Valida propriedade, carrinho aberto e existência de itens.
+    2. Revalida estoque no Mongo e decrementa `ProductVariation`/`Product` igual ao checkout online.
+    3. Cria um único `Order` com status `FINALIZADO_PRESENCIAL`, `isPaid = true`, `paidAt = now()` e snapshot de itens (`OrderItemMapper.toOrderItemSnapshot(PresencialCartItem, Order, Product, ProductVariation)`), garantindo que os registros históricos fiquem apenas em `OrderItem`.
+    4. Chama `PresencialCart.markAsFinalized(order)` e bloqueia futuras alterações no carrinho.
+    5. Credita imediatamente o saldo do vendedor (`CompanyProfile.balance += orderTotal`).
+  - `OrderStatus` inclui `FINALIZADO_PRESENCIAL`. Esse status não participa do fluxo padrão de mudança de status; carrinhos presenciais não permitem cancelamentos ou expiração porque a venda termina no ato.
+  - Controllers e UseCases de presencial **sempre usam Pageable** para listagens e validam user ownership via `UserService.getLoggedInUser()` + `CompanyProfileService.validateIsActive`.
 
   ### 🧬 Profile Inheritance & Entity Relationships
 
@@ -533,143 +604,4 @@
   - `role/service/RoleSeeder.java` - Initial role setup on application startup
   - `order/service/PickupCodeGenerator.java` - Unique pickup code generation for orders
   - `auth/service/JwtService.java` - JWT token generation/validation
-
-
-  ## 10. MVP — Regras de Negócio Essenciais
-
-  Estas regras representam o conjunto mínimo de comportamentos que um MVP válido da UniMarket deve satisfazer. Elas derivam do arquivo `mvp_basics.txt` e devem ser seguidas por qualquer implementação mínima do produto.
-
-  - **Registro de Vendedor:**
-    - Criação de `User` e `CompanyProfile` ao cadastrar um vendedor.
-    - `company` inicia com saldo `0` (flag de desenvolvimento/contabilidade) e `status` geral `ATIVO` mas `statusDeVenda` como `FECHADO` até o vendedor habilitar vendas (implementação pendente onde aplicável).
-
-  - **Configuração de Disponibilidade:**
-    - Vendedor define dias da semana e intervalos horários de funcionamento.
-    - Disponibilidade gravada no perfil da empresa e validada (sem sobreposição de intervalos).
-
-  - **Criação de Produto (Catálogo - MongoDB):**
-    - Produto criado com dados básicos (`name`, `description`, `basePrice`, `categoryId`) e referência `companyId`.
-    - Novo produto é inserido no Mongo com `status = INATIVO` e sem variações até o vendedor ativar/editar.
-
-  - **Criação de Variação (MongoDB):**
-    - Variações associadas ao `productId` são documentos independentes (`product_variations`).
-    - Cada variação inclui `value`, `additionalPrice`, `stockQuantity` e `available`.
-
-  - **Adicionar Item no Carrinho (PostgreSQL):**
-    - Usuário seleciona `productVariationId` e quantidade.
-    - `RegisterCartItemUseCase` valida estoque consultando o catálogo em Mongo antes de persistir o `CartItem` em Postgres.
-    - Ao adicionar, é criado um snapshot do nome e preço unitário atual no `CartItem`.
-    - Se não houver estoque, a variação não deve estar disponível para seleção (UX) e a tentativa de adicionar deve falhar com mensagem apropriada.
-
-  - **Visualizar Carrinho:**
-    - Cálculo do total em tempo real a partir dos snapshots e quantidades.
-    - Produtos inativos devem ser automaticamente removidos do carrinho (ou sinalizados), com notificação ao usuário.
-
-  - **Finalização do Pedido (Checkout / Split Order):**
-    - Agrupar itens do carrinho por `CompanyProfile` e criar um `Order` por vendedor.
-    - Criar `OrderItem` como snapshot (nome, preço unitário, variação, preço adicional, quantidade e subtotal calculado).
-    - Ajustar estoque no Mongo (decremento) durante o fluxo transacional e garantir consistência.
-    - Persistir orders em PostgreSQL (estado transacional) e limpar itens do carrinho.
-
-  - **Fluxo de Retirada / Mudança de Status do Pedido:**
-    - Gerar um `Pickup Code` único por pedido (ex.: 5 caracteres) para validação na retirada.
-    - Estados mínimos do pedido: `PENDENTE`, `PAGO`, `PRONTO_RETIRADA`, `COMPLETADO`, `CANCELADO`, `EXPIRADO`, `AGUARDANDO_CONFIRMACAO`, `SEM_RETIRADA`.
-    - Regras adicionais:
-      - Se o cliente não retirar em 24h, marcar `EXPIRADO`.
-      - `SEM_RETIRADA` é um estado administrativo para contabilização de faltas e possíveis punições.
-
-  ---
-
-  Notas de integração e prioridades para o MVP:
-
-  - Priorizar: cadastro de vendedor, criação de produto/variação no catálogo (Mongo), adicionar ao carrinho, checkout com split order e estados básicos de pedido.
-  - Opcional inicialmente: processamento de saldo do vendedor (contabilidade), notificações avançadas, e regras de punição (podem ser introduzidas após MVP).
-  - Segurança: validar propriedade (ex.: `UserService.getLoggedInUser()`) em endpoints que alteram perfis/recursos de empresas.
-
-  Estas regras devem ser incluídas na documentação do projeto e servem como contrato para PRs que toquem o fluxo de catálogo, carrinho ou checkout.
-
-  ## Entity Reference — Basic Structure
-
-  This section lists the current Java domain entities (JPA and Mongo documents), their persistence type (SQL/NoSQL), core properties and main relationships. Use this as a structural reference when adding or changing domains.
-
-  **PostgreSQL (JPA entities)**
-  - `User` (JPA / SQL)
-    - Base: extends `AuditableEntity` (UUID id, createdAt, updatedAt)
-    - Key fields: `email`, `password`, `active`
-    - Relations: `contacts` (OneToMany -> `ContactInfo`), `roles` (ManyToMany -> `Role`)
-
-  - `Role` (JPA / SQL)
-    - Fields: `name` (enum `RoleName`)
-    - Relations: `users` (ManyToMany -> `User`)
-
-  - `ContactType` (JPA / SQL)
-    - Fields: `channel` (enum), `baseUrl`, `validationRegex`, `iconUrl`
-    - Relations: `contactInfos` (OneToMany -> `ContactInfo`)
-
-  - `ContactInfo` (JPA / SQL)
-    - Fields: `value`
-    - Relations: `contactType` (ManyToOne -> `ContactType`), `profile`/`user` (ManyToOne -> `User`)
-
-  - `CompanyProfile` (JPA / SQL)
-    - Extends `ProfileEntity` (maps to `company_profiles`)
-    - Fields: `companyName`, `cnpj`, `businessSector`, `weekDaysAvailable`, `dailyAvailableTimeRanges`
-    - Relations: `variationCategories` (OneToMany -> `VariationCategorySeller`), `orders` (OneToMany -> `Order`), `paymentMethods` (ManyToMany -> `PaymentMethod`)
-
-  - `IndividualProfile` (JPA / SQL)
-    - Extends `ProfileEntity` (maps to `individual_profiles`)
-    - Fields: `name`, `cpf`
-    - Relations: `cart` (OneToOne -> `Cart`), `orders` (OneToMany -> `Order`)
-
-  - `Category` (JPA / SQL)
-    - Fields: `categoryName`, `businessSector`
-    - Relations: `variationCategories` (ManyToMany -> `VariationCategoryGlobal`)
-
-  - `VariationCategoryEntity` (JPA / SQL, JOINED inheritance)
-    - Abstract base for `VariationCategoryGlobal` and `VariationCategorySeller`
-    - Fields: `name`, `type`, `measureUnit`, `description`, `active`
-
-  - `PaymentMethod` (JPA / SQL)
-    - Fields: `name`, `iconUrl`
-    - Relations: `companyProfiles` (ManyToMany -> `CompanyProfile`)
-
-  - `Cart` (JPA / SQL)
-    - Fields: none scalar aside from audit
-    - Relations: `profile` (OneToOne -> `IndividualProfile`), `items` (OneToMany -> `CartItem`)
-
-  - `CartItem` (JPA / SQL)
-    - Fields (snapshots): `productId`, `productVariationId`, `productName`, `itemQuantity`, `unitPriceSnapshot`, `status` (enum `ReservationStatus`)
-    - Relations: `cart` (ManyToOne -> `Cart`)
-
-  - `Order` (JPA / SQL)
-    - Fields: `pickUpcode`, `status` (enum `OrderStatus`), `orderTotal`
-    - Relations: `orderItems` (OneToMany -> `OrderItem`), `customer` (ManyToOne -> `IndividualProfile`), `company` (ManyToOne -> `CompanyProfile`)
-
-  - `OrderItem` (JPA / SQL)
-    - Snapshot fields: `productId`, `productVariationId`, `productName`, `productVariationValue`, `productPrice`, `variationAdditionalPriceSnapshot`, `finalUnitPriceSnapshot`, `orderQuantity`, `subtotal`
-    - Relations: `order` (ManyToOne -> `Order`)
-
-  - `Appointment` (JPA / SQL)
-    - Fields: `type` (enum), `status` (enum), `scheduledDate`, `notes`, `orderId` (UUID ref), `serviceId` (UUID ref)
-    - Relations: `customer` (ManyToOne -> `IndividualProfile`), `company` (ManyToOne -> `CompanyProfile`)
-
-
-  **MongoDB (Documents / NoSQL)**
-  - `Product` (Mongo document)
-    - Fields: `productName`, `description`, `basePrice`, `totalStock`, `companyId`, `categoryId`, `variations` (DBRef list to `ProductVariation`), `locationReference`
-
-  - `ProductVariation` (Mongo document)
-    - Fields: `productId`, `variationCategoryId`, `variationCategoryType`, `valueType`, `variationValue`, `variationAdditionalPrice`, `stockQuantity`, `available`
-
-  - `ServiceOffering` (Mongo document)
-    - Fields: `serviceName`, `description`, `price`, `durationMinutes`, `available`, `model`, `companyId`, `categoryId`, `locationReference`
-
-  - `AuditLog` / other logs (Mongo document)
-    - Flexible log documents used for audit, metrics and trace data
-
-  **Notes and guidelines**
-  - Keep PostgreSQL (JPA) for transactional, referential data (users, profiles, carts, orders, taxonomy).
-  - Keep MongoDB for flexible, high-read catalog & logs (products, variations, services, audit logs).
-  - Always reference catalog items from JPA entities by UUID (never create JPA relations to Mongo documents).
-  - When adding a new domain, follow the established module layout: `controller`, `dto`, `mapper`, `model`, `ports`, `repository`, `service` and choose the correct persistence type according to the rules above.
-
 

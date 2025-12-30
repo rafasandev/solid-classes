@@ -135,4 +135,165 @@ ANOTAÇÕES GERAIS
             - Executar verificações adicionais conforme o status desejado
             - Atualizar o status do pedido
             - Persistir as mudanças no banco de dados
+
+- SISTEMA DE VENDA PRESENCIAL
+    - O vendedor pode registrar vendas presenciais dentro da aplicação
+    - Para isso, seria melhor criar um carrinho ou grupo de itens, já que o carrinho foi feito para agregar vários vendedores, mas nesse caso só haveria um vendedor
+    - O vendedor adiciona os itens ao carrinho, informa o comprador (pode ser um comprador genérico ou um comprador específico)
+    - O vendedor finaliza o pedido, que segue o mesmo fluxo de pedidos online, mas com status diferente
+    - O pedido presencial pode ter os seguintes status:
+        - FINALIZADO_PRESENCIAL (Pedido finalizado presencialmente)
+    - Não são necessários status de processamento, retirada ou expiração, já que o pedido é finalizado na hora
+    - O pedido presencial pode ser auditado posteriormente, mas não há necessidade de um fluxo complexo
+    - O saldo do vendedor é atualizado imediatamente após a finalização do pedido presencial
+    - ENTIDADES DA VENDA PRESENCIAL
+        - O product já existe, não é necessário criar uma nova entidade
+        - É melhor criar um novo tipo de carrinho ou reutilizar o existente ? Reutilizar o carrinho existente, mas garantir que ele possa ser vinculado a um único vendedor
+        - Seguindo a entidade do carrinho atual, ele é vinculado ao comprador e os cartItens, que são os itens do carrinho
+        - Então o carrinho atual não pode ser reutilizado, pois o perfil de abertura dele é um vendedor (companyprofile) e não um cliente (individualprofile)
+        - Portanto, é melhor criar uma nova entidade chamada PresencialCart, que é vinculada ao vendedor e contém os PresencialCartItems
+        - O PresencialCartItem é semelhante ao CartItem, mas vinculado ao PresencialCart
+        - O PresencialCartItem contém a productVariation, quantidade e preço unitário no momento da venda
+        - O PresencialCart é vinculado ao vendedor (companyProfile) e ao comprador (individualProfile ou um comprador genérico)
+        - O PresencialCart pode ser finalizado, criando um Order com status FINALIZADO_PRESENCIAL
+        - O PresencialCart vai gerar apenas um pedido, diferentemente do carrinho normal que pode gerar vários pedidos para diferentes vendedores
+        - O PresencialCartItem precisa armazenar o preço unitário no momento da venda, para evitar problemas futuros com alterações de preço, criando um snapshot simples
+        - O que é necessário na snapshot:
+            - id do productVariation
+            - id do produto pai
+            - nome do produto
+            - quantidade
+            - preço unitário no momento da venda
+        - É indicado fazer uma indexação dos pedidos presenciais para facilitar auditorias futuras ? Sim, é uma boa prática
+        - É melhor que esse carrinho seja apenas registrado a cada nova compra ? Sim, não há necessidade de manter um carrinho aberto para vendas presenciais
+        - O vendedor pode registrar vendas presenciais para compradores genéricos ou específicos
+        - O carrinho normal pode ser apenas esvaziado após a finalização do pedido, mas o PresencialCart deve ser criado e finalizado a cada venda presencial
+        - Faz sentido ? Sim, dessa forma o sistema fica mais organizado e fácil de auditar. Mas e a auditoria do carrinho normal ?
+        - A auditoria do carrinho normal é feita por meio dos pedidos gerados, que contém snapshots dos itens do pedido
+        - Portanto, não há necessidade de manter um histórico do carrinho normal, apenas dos pedidos gerados
+        - O PresencialCart é uma entidade temporária, criada para cada venda presencial e finalizada imediatamente
+        - O sistema deve permitir que o vendedor registre vendas presenciais de forma simples e rápida
+        - O vendedor pode adicionar itens ao PresencialCart, informar o comprador e finalizar a venda
+        - O sistema cria o pedido correspondente e atualiza o saldo do vendedor
+        - A auditoria das vendas presenciais pode ser feita por meio dos pedidos gerados
+        - o CartItem normal tem que ter snapshots dos produtos também ? Sim, para garantir a integridade dos dados dos pedidos
+        - Mas e se um valor mudar no meio tempo ? O snapshot do CartItem deve armazenar o preço unitário no momento da venda, assim como o PresencialCartItem
+        - Mas o OrderItem já não faz isso ? Sim, o OrderItem já armazena essas informações, então não há necessidade de duplicar no CartItem
+        - Portanto, o CartItem pode permanecer simples, apenas vinculando ao productVariation e quantidade
+        - O OrderItem é o responsável por armazenar o snapshot dos dados do produto no momento da venda
+        - Isso mantém o sistema mais limpo e evita duplicação de dados desnecessária
+        - Estrutura do CartITem Atual: 
+            - id (UUID)
+            - productVariationId (UUID)
+            - productId (UUID)
+            - productName (String)
+            - itemQuantity (int)
+            - unitPriceSnapshot (BigDecimal)
+            - cart (Cart)
+        - Estrutura do CartITem Proposta (sem snapshot, apenas referência):
+            - id (UUID)
+            - productVariationId (UUID)
+            - itemQuantity (int)
+            - cart (Cart)
+
+        - Após a compra presencial, vai ser criado um pedido da mesma forma que o online
+        - Portanto, o OrderItem vai armazenar o snapshot dos dados do produto no momento da venda
+        - O OrderItem já existe e armazena essas informações, então não há necessidade de duplicar no PresencialCartItem
+
+        - Lista de entidades:
+            - PresencialCart
+                - id (UUID)
+                - seller (CompanyProfile)
+                - buyer (IndividualProfile ou null para comprador genérico)
+                - createdAt (Timestamp)
+                - updatedAt (Timestamp)
+                - PresencialCartItems (List<PresencialCartItem>)
+            - PresencialCartItem
+                - id (UUID)
+                - PresencialCart (PresencialCart)
+                - productVariation (ProductVariation)
+                - quantity (int)
+        
+        - Fluxo de venda presencial:
+            - O vendedor cria um novo PresencialCart
+            - O vendedor indica o comprador (null para comprador genérico), a partir o cpf ou id do comprador (DESENVOLVIMENTO DE UM CÓDIGO DE IDENTIFICAÇÃO SEGURO PARA CLIENTES)
+            - Ele vai adicionando e configurando os novos PresencialCartItems
+            - Quando finalizar a compra, o vendedor finaliza o PresencialCart
+            - O sistema cria um novo Order com status FINALIZADO_PRESENCIAL
+            - O saldo do vendedor é atualizado imediatamente
+
+- SISTEMA DE CONTROLE DE ESTOQUE DE PRODUTOS
+    - O sistema deve dar um controle de estoque eficiente para os vendedores
+    - Cada variação de produto deve ter sua própria quantidade em estoque
+    - O estoque é ajustado automaticamente ao finalizar pedidos
+    - O vendedor deve poder alterar o estoque manualmente, se necessário, de acordo com a produção ou recebimento de mercadorias
+    - O sistema deve validar o estoque disponível ao adicionar itens ao carrinho
+    - Se não houver estoque suficiente, o sistema deve impedir a adição do item ao carrinho
+
+    - EDIÇÃO MANUAL DE ESTOQUE PELO VENDEDOR
+        - O vendedor pode ajustar o estoque manualmente por meio de uma interface dedicada
+        - O vendedor informa a variação do produto e a nova quantidade em estoque
+        - O sistema valida a entrada e atualiza o estoque no banco de dados
+        - Será verificado o usuário logado e se ele é o dono do produto antes de permitir a alteração do estoque
+        - A nova quantidade deve ser um número inteiro não negativo
+        
+- FLUXO RESUMIDO DO SISTEMA
+    - ADMINS
+        - CRIAÇÃO DE CATEGORIAS DE PRODUTOS E SERVIÇOS
+        - CRIAÇÃO DAS CATEGORIAS DE VARIAÇÕES DE PRODUTOS E SERVIÇOS (VariationCategoryGlobal)
+        - CRIAÇÃO DOS TIPOS DE MEIOS DE CONTATO (ContactType)
+        - CRIAÇÃO DOS MEIOS DE PAGAMENTO DISPONÍVEIS (PaymentMethod)
+
+    - USERS
+        - REGISTRO DE VENDEDOR (EMPRESA)
+        - REGISTRO DE CLIENTE (INDIVIDUAL) E CONSEQUENTE CRIAÇÃO DE CARRINHO VAZIO
+        - CONFIGURAÇÃO DE MEIOS DE CONTATO (EMPRESA E INDIVIDUAL)
+        - ATIVAÇÃO DE PERFIL APÓS CONFIGURAÇÃO
+
+    - SELLERS (EMPRESAS)
+        - CONFIGURAÇÃO DE HORÁRIOS E FORMAS DE PAGAMENTO (CompanyDailyAvailability e PaymentMethod)
+        - CRIAÇÃO DE CATEGORIAS PERSONALIZADAS DE VARIAÇÃO POR VENDEDOR (VariationCategorySeller)
+        - CRIAÇÃO DE PRODUTOS E SUAS RESPECTIVAS VARIAÇÕES (Product e ProductVariation)
+        - CONTROLE DE ESTOQUE DE VARIAÇÕES DE PRODUTOS
+        - REGISTRO DE VENDAS PRESENCIAIS (PresencialCart e PresencialCartItem)
+        - ALTERAÇÃO MANUAL DOS STATUS DOS PEDIDOS
+
+    - BUYERS (INDIVIDUAL)
+        - ADIÇÃO DE ITENS NO CARRINHO (Cart e CartItem)
+        - FECHAMENTO DE PEDIDOS (Order e OrderItem)
+        - RETIRADA DE PEDIDOS NO LOCAL DO VENDEDOR COM VALIDAÇÃO DE CÓDIGO DE COMPRA
+        - COMUNICAÇÃO EXTERNA COM O VENDEDOR SOBRE OS PEDIDOS
     
+    - AUTO
+        - Adição de penalidades com o andamento de status de pedidos (Penalty)
+        - Ajuste automático de estoque ao finalizar pedidos
+        - Crédito automático do saldo do vendedor ao completar pedidos
+        - Esvaziamento automático do carrinho ao finalizar pedidos
+        - Verificação automática de disponibilidade de itens e estoque ao fechar pedidos
+        - Verificação automática de status ativo/inativo dos perfis
+        - Mudança de status de produtos ao alterar o estoque
+        - Geração automática de snapshots dos itens do pedido ao finalizar pedidos
+        - Geração de códigos únicos de confirmação para pedidos
+        - Geração automática de timestamps de criação e atualização das entidades
+
+- ENTIDADES PRINCIPAIS DO SISTEMA
+    - User
+    - IndividualProfile
+    - CompanyProfile
+        - CompanyDailyAvailability
+    - ContactType
+    - ContactInfo
+    - PaymentMethod
+    - VariationCategoryGlobal
+    - VariationCategorySeller
+    - Product
+    - ProductVariation
+    - Cart
+    - CartItem
+    - PresencialCart
+    - PresencialCartItem
+    - Order
+    - OrderItem
+    - Category
+    - ServiceOffering
+    - Penalty

@@ -49,3 +49,9 @@ RETIRADA DE PEDIDO (MUDANÇA DE STATUS)
         Se o pedido não for retirado em 24 horas -> EXPIRADO
         Se o cliente solicitar confirmação -> AGUARDANDO_CONFIRMACAO
         Se o vendedor marcar como sem retirada -> SEM_RETIRADA (Usado para contabilização interna de punição ao cliente que não retirou o pedido, evitando brincadeiras ou fraude no sistema [DESENVOLVIMENTO PENDENTE])
+
+VENDA PRESENCIAL
+    - Criação do carrinho presencial pelo vendedor
+    - Adição de itens ao carrinho presencial
+    - Finalização do carrinho presencial com geração do pedido
+    - Retirada do pedido pelo cliente conforme o fluxo de retirada padrão
